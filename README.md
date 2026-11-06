@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
 
 # 🛡️ CyberShield AI
@@ -288,3 +289,6 @@ This repository is an independently maintained upgrade of the existing CyberShie
 ## 📄 License & Attribution
 
 This project retains the Apache License 2.0. Existing components inherited from the original project remain subject to their applicable license terms. Original license and copyright notices, where present, must be preserved.
+=======
+# cyberShieldai
+>>>>>>> origin/main
