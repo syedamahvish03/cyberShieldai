@@ -1,0 +1,76 @@
+# ===============================
+# Python
+# ===============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ===============================
+# Virtual Environments
+# ===============================
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+
+# ===============================
+# Environment Variables
+# ===============================
+.env
+
+# ===============================
+# SQLite Database
+# ===============================
+db.sqlite3
+backend/db.sqlite3
+
+# ===============================
+# IDE
+# ===============================
+.vscode/
+.idea/
+
+# ===============================
+# OS Files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Python Cache
+# ===============================
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ===============================
+# Logs
+# ===============================
+*.log
+
+# ===============================
+# Django Static
+# ===============================
+staticfiles/
+
+# ===============================
+# Jupyter
+# ===============================
+.ipynb_checkpoints/
+
+# ===============================
+# Node
+# ===============================
+node_modules/
+
+# Large datasets
+datasets/optional_large/df.csv
+datasets/emails/phishing_email.csv
+datasets/emails/CEAS_08.csv
+# Raw datasets - keep local until redistribution permissions are verified
+datasets/
+
+# Trained model artifacts - retained locally pending license verification
+ml_model/*.pkl

@@ -1,0 +1,17 @@
+===== EMAIL MODEL =====
+
+Accuracy  : 98.45%
+Precision : 97.95%
+Recall    : 99.10%
+F1 Score  : 98.52%
+
+===== CLASSIFICATION REPORT =====
+
+              precision    recall  f1-score   support
+
+           0       0.99      0.98      0.98      7935
+           1       0.98      0.99      0.99      8563
+
+    accuracy                           0.98     16498
+   macro avg       0.98      0.98      0.98     16498
+weighted avg       0.98      0.98      0.98     16498
