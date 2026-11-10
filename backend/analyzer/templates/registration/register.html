@@ -1,0 +1,157 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - CyberShield AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #050812, #0f1a3d, #050812);
+            color: #e8f0ff;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 36px;
+            background: rgba(20, 28, 56, 0.9);
+            border: 1px solid rgba(15, 255, 255, 0.25);
+            border-radius: 14px;
+            box-shadow: 0 0 35px rgba(0, 255, 255, 0.08);
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            text-align: center;
+            color: #00ffe0;
+            font-size: 25px;
+        }
+
+        .subtitle {
+            margin-bottom: 25px;
+            text-align: center;
+            color: #a0b4d4;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 7px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(15, 255, 255, 0.25);
+            border-radius: 7px;
+            outline: none;
+            background: #0a0e27;
+            color: #ffffff;
+        }
+
+        input:focus {
+            border-color: #00ffe0;
+        }
+
+        .helptext {
+            display: block;
+            margin-top: 7px;
+            color: #91a5c8;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        ul.errorlist {
+            margin-top: 7px;
+            color: #ff6b81;
+            font-size: 13px;
+            list-style-position: inside;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #00ffe0, #00b3ff);
+            color: #04111f;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .footer {
+            margin-top: 22px;
+            color: #a0b4d4;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #00ffe0;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="register-card">
+        <h1>CyberShield AI</h1>
+        <p class="subtitle">Create your security dashboard account</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+                    <small class="helptext">
+                        {{ field.help_text }}
+                    </small>
+                {% endif %}
+
+                {{ field.errors }}
+            {% endfor %}
+
+            {{ form.non_field_errors }}
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <p class="footer">
+            Already have an account?
+            <a href="{% url 'login' %}">Sign In</a>
+        </p>
+    </main>
+</body>
+</html>
+```

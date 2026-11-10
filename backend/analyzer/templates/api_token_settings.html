@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield AI - API Token Settings</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #101827;
+            color: #e5e7eb;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #1b2638;
+            border: 1px solid #344256;
+            border-radius: 12px;
+        }
+
+        h1 {
+            color: #22d3ee;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .token {
+            display: block;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-wrap: anywhere;
+            background: #0b1220;
+            border: 1px solid #22d3ee;
+            border-radius: 6px;
+            color: #67e8f9;
+        }
+
+        button, .back-link {
+            display: inline-block;
+            padding: 11px 17px;
+            margin: 8px 5px 8px 0;
+            border: 0;
+            border-radius: 6px;
+            background: #0891b2;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .danger {
+            background: #dc2626;
+        }
+
+        .warning {
+            padding: 12px;
+            background: #422006;
+            border-radius: 6px;
+            color: #fde68a;
+        }
+
+        .success {
+            padding: 12px;
+            background: #064e3b;
+            border-radius: 6px;
+            color: #a7f3d0;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Chrome Extension API Access</h1>
+
+        <p>
+            Manage the API token used by your CyberShield AI
+            Chrome extension.
+        </p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="success">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {% if new_token %}
+            <h3>Your new API token</h3>
+
+            <div class="token" id="apiToken">{{ new_token }}</div>
+
+            <button type="button" onclick="copyToken()">
+                Copy Token
+            </button>
+
+            <p class="warning">
+                This is the only time the complete token will be
+                displayed. Copy it and store it securely.
+                Do not share it with anyone.
+            </p>
+
+        {% elif token_exists %}
+            <p class="success">
+                An API token is currently active for your account.
+            </p>
+
+            <p>
+                For security, the existing token cannot be displayed
+                again. Generate a replacement if you no longer have it.
+            </p>
+
+        {% else %}
+            <p>
+                No API token has been generated for your account yet.
+            </p>
+        {% endif %}
+
+        <form method="post" action="{% url 'generate_extension_token' %}">
+            {% csrf_token %}
+
+            <button type="submit"
+                onclick="return confirm('Generate a new token? Any previous token will stop working.');">
+                {% if token_exists %}
+                    Generate Replacement Token
+                {% else %}
+                    Generate API Token
+                {% endif %}
+            </button>
+        </form>
+
+        {% if token_exists %}
+            <form method="post" action="{% url 'revoke_extension_token' %}">
+                {% csrf_token %}
+
+                <button type="submit" class="danger"
+                    onclick="return confirm('Revoke your extension API token?');">
+                    Revoke Token
+                </button>
+            </form>
+        {% endif %}
+
+        <a class="back-link" href="{% url 'dashboard' %}">
+            Back to Dashboard
+        </a>
+    </main>
+
+    <script>
+        function copyToken() {
+            const token = document.getElementById("apiToken").innerText;
+
+            navigator.clipboard.writeText(token).then(() => {
+                alert("API token copied.");
+            }).catch(() => {
+                alert("Copy failed. Please select and copy the token manually.");
+            });
+        }
+    </script>
+</body>
+</html>

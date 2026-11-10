@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - CyberShield AI</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #050812, #0f1a3d, #050812);
+        color: #e8f0ff;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 36px;
+        background: rgba(20, 28, 56, 0.9);
+        border: 1px solid rgba(15, 255, 255, 0.25);
+        border-radius: 14px;
+        box-shadow: 0 0 35px rgba(0, 255, 255, 0.08);
+      }
+
+      h1 {
+        margin-bottom: 8px;
+        text-align: center;
+        color: #00ffe0;
+        font-size: 25px;
+      }
+
+      .subtitle {
+        margin-bottom: 28px;
+        text-align: center;
+        color: #a0b4d4;
+        font-size: 14px;
+      }
+
+      label {
+        display: block;
+        margin: 18px 0 8px;
+        font-size: 14px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(15, 255, 255, 0.25);
+        border-radius: 7px;
+        outline: none;
+        background: #0a0e27;
+        color: #ffffff;
+      }
+
+      input:focus {
+        border-color: #00ffe0;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 25px;
+        padding: 13px;
+        border: none;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #00ffe0, #00b3ff);
+        color: #04111f;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:hover {
+        opacity: 0.9;
+      }
+
+      .error {
+        margin-top: 15px;
+        color: #ff6b81;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .footer {
+        margin-top: 24px;
+        color: #6b7a9e;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .footer a {
+        color: #00ffe0;
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="login-card">
+      <h1>CyberShield AI</h1>
+      <p class="subtitle">Sign in to access your security dashboard</p>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <label for="id_username">Username</label>
+        <input
+          type="text"
+          name="username"
+          id="id_username"
+          autocomplete="username"
+          required
+          autofocus
+        />
+
+        <label for="id_password">Password</label>
+        <input
+          type="password"
+          name="password"
+          id="id_password"
+          autocomplete="current-password"
+          required
+        />
+
+        {% if form.errors %}
+        <p class="error">
+          Username or password is incorrect. Please try again.
+        </p>
+        {% endif %} {% if next %}
+        <input type="hidden" name="next" value="{{ next }}" />
+        {% endif %}
+
+        <button type="submit">Sign In</button>
+      </form>
+
+      <p class="footer">
+        Don't have an account?
+        <a href="{% url 'register' %}">Create Account</a>
+      </p>
+    </main>
+  </body>
+</html>

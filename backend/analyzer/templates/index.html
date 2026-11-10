@@ -2098,7 +2098,7 @@ scrollbar-color: #00f0ff #101936;
     </style>
 </head>
 
-<body>
+<body data-analysis-result="{% if result %}true{% else %}false{% endif %}">
     <div class="container">
         <!-- SIDEBAR -->
         <div class="sidebar">
@@ -2160,6 +2160,25 @@ scrollbar-color: #00f0ff #101936;
 
 
             <div class="sidebar-spacer"></div>
+
+            <form method="post" action="{% url 'logout' %}" style="margin-top: 12px;">
+                {% csrf_token %}
+                <button
+                    type="submit"
+                    class="nav-item"
+                    style="
+                        width: 100%;
+                        border: none;
+                        background: transparent;
+                        color: inherit;
+                        text-align: left;
+                        font: inherit;
+                        cursor: pointer;
+                    "
+                >
+                    Sign Out
+                </button>
+            </form>
 
         </div>
 
@@ -2491,25 +2510,23 @@ scrollbar-color: #00f0ff #101936;
                 Browser Extension
             </div>
 
-            <span class="feed-badge badge-suspicious">
-                PLANNED
+            <span class="feed-badge badge-safe">
+                ACTIVE
             </span>
 
         </div>
 
         <div class="feed-text" style="margin-top: 12px; line-height: 1.7;">
-
-            Browser-based phishing detection support is planned for
-            future integration. The extension architecture is designed
-            to analyze suspicious URLs, webpage content, fake login
-            pages, and social engineering attempts in real time using
-            the trained machine learning models.
-
+            Chrome extension is successfully integrated with the
+            CyberShieldAI detection API. Users can manually select
+            email or SMS text from webpages and scan it using the
+            trained machine learning models.
         </div>
 
     </div>
 
 </div>
+    </div>
 </section>
                 <!-- Live Threat Feed -->
 <section class="page-section" id="threat-feed">
@@ -2790,131 +2807,16 @@ scrollbar-color: #00f0ff #101936;
         <!-- LEFT SIDE -->
         <div class="email-left">
 
-            <form
-                id="emailForm"
-                class="form-section"
-                method="post"
-                action="{% url 'connect_email' %}"
-            >
-
-                {% csrf_token %}
-
-                <h3 style="
-                    font-size: 15px;
-                    margin-bottom: 20px;
-                    font-weight: 600;
-                    color: var(--text-primary);
-                ">
-                    Connect Email Account
-                </h3>
-
-                <!-- PROVIDER -->
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Email Provider
-                    </label>
-
-                    <select
-                        id="provider"
-                        class="form-select"
-                        name="provider"
-                        required
-                    >
-
-                        <option value="">
-                            -- Select Provider --
-                        </option>
-
-                        <option value="gmail">
-                            Gmail
-                        </option>
-
-                        <option value="outlook">
-                            Outlook / Microsoft 365
-                        </option>
-
-                        <option value="yahoo">
-                            Yahoo Mail
-                        </option>
-
-                        <option value="custom">
-                            Custom IMAP
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <!-- EMAIL -->
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Email Address
-                    </label>
-
-                    <input
-                        type="email"
-                        id="email"
-                        class="form-input"
-                        name="email"
-                        placeholder="your.email@example.com"
-                        required
-                    >
-
-                </div>
-
-                <!-- PASSWORD -->
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Password / App Token
-                    </label>
-
-                    <input
-                        type="password"
-                        id="password"
-                        class="form-input"
-                        name="password"
-                        placeholder="Enter your password or app-specific token"
-                        required
-                    >
-
-                </div>
-
-                <!-- AUTO SCAN -->
-                <div class="checkbox-group">
-
-                    <input
-                        type="checkbox"
-                        id="autoScan"
-                        name="auto_scan"
-                    >
-
-                    <label for="autoScan">
-                        Automatically scan incoming emails
-                    </label>
-
-                </div>
-
-                <!-- BUTTON -->
-                <button
-                    type="submit"
-                    class="button button-primary"
-                >
-                    Connect Email
-                </button>
-
-                <!-- SMALL INFO -->
-                <div style="
-                    margin-top:14px;
-                    font-size:12px;
-                    color:var(--text-muted);
-                ">
-                    Supports secure IMAP authentication and automated phishing monitoring.
-                </div>
-
-            </form>
+            <div class="form-section">
+    <h3 style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">
+        Live Email Connection Temporarily Unavailable
+    </h3>
+    <p style="font-size: 13px; color: var(--text-muted);">
+        Password-based inbox access has been disabled while secure OAuth
+        authentication is being developed. Do not enter your email password
+        or app token here.
+    </p>
+</div>
 
         </div>
 
@@ -3056,12 +2958,12 @@ scrollbar-color: #00f0ff #101936;
         🛡 AI security system actively defending inbox
     </div>
 
-    <a
-        href="{% url 'disconnect_email' %}"
-        class="disconnect-button"
-    >
-        ⛔ Disconnect Email
-    </a>
+    <form method="post" action="{% url 'disconnect_email' %}">
+    {% csrf_token %}
+    <button type="submit" class="disconnect-button">
+        Disconnect Email
+    </button>
+</form>
 
 </div>
 
@@ -3418,31 +3320,8 @@ scrollbar-color: #00f0ff #101936;
                     <!-- Analysis Results -->
                     {% if result %}
                     <div class="analysis-result">
-                        <div class="result-header">
-                           <div class="result-verdict
-{% if phishing_prob >= 70 %}
-verdict-phishing
-{% elif phishing_prob >= 30 %}
-verdict-warning
-{% else %}
-verdict-safe
-{% endif %}">
 
-    {% if phishing_prob >= 70 %}
-        🔴 HIGH RISK — PHISHING DETECTED
-
-    {% elif phishing_prob >= 30 %}
-        🟡 MEDIUM RISK — SUSPICIOUS CONTENT
-
-    {% else %}
-        🟢 LOW RISK — SAFE CONTENT / INSUFFICIENT DATA
-
-    {% endif %}
-
-</div>
-                        </div>
-
-                        <div style="margin-top: 20px; margin-bottom: 20px;">
+   <div style="margin-top: 20px; margin-bottom: 20px;">
 
     <div class="result-label" style="margin-bottom: 10px;">
         Analyzed Content
@@ -3464,44 +3343,116 @@ verdict-safe
 
 </div>
 
-                        <div class="result-bar">
-                            <div class="result-fill" style="width: {{ phishing_prob|default:'0' }}%;"></div>
-                        </div>
+<div class="result-bar" data-phishing-probability="{{ phishing_prob|default:'0' }}">
+    <div class="result-fill"></div>
+</div>
 
-                        <div class="result-row">
-                            <div class="result-item">
-                                <div class="result-label">Phishing Probability</div>
-                               <div class="result-value">{{ phishing_prob|floatformat:2|default:'0' }}%</div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-label">Safe Score</div>
-                                <div class="result-value">{{ safe_score|floatformat:2|default:'0' }}%</div>
-                            </div>
-                        </div>
+<div class="result-row">
+    <div class="result-item">
+        <div class="result-verdict
+            {% if 'PHISHING' in result %}
+                verdict-phishing
+            {% elif url_analysis.links_needing_review > 0 %}
+                verdict-warning
+            {% else %}
+                verdict-safe
+            {% endif %}">
 
-                        <div class="result-row">
-                            <div class="result-item">
-                                <div class="result-label">Analysis Timestamp</div>
-                                <div class="result-value">{{ analysis_time|default:'Just now' }}</div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-label">Model Used</div>
-                                <div class="result-value">{{ model_name|default:'CyberShield v1.0' }}</div>
-                            </div>
-                        </div>
+            {% if 'PHISHING' in result and url_analysis.links_needing_review > 0 %}
+                🔴 HIGH RISK — PHISHING AND SUSPICIOUS LINKS DETECTED
+            {% elif 'PHISHING' in result %}
+                🔴 HIGH RISK — PHISHING DETECTED
+            {% elif url_analysis.links_needing_review > 0 %}
+                🟡 WARNING — SUSPICIOUS LINK DETECTED
+            {% else %}
+                🟢 LOW RISK — NO SUSPICIOUS INDICATORS DETECTED
+            {% endif %}
 
-                        {% if tactics %}
-                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(15, 255, 255, 0.1);">
-                            <div class="tactics-label" style="margin-bottom: 10px;">Detected Attack Tactics</div>
-                            <div class="tactics-list">
-                                {% for tactic in tactics %}
-                                <span class="tactic-tag">{{ tactic }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
+        </div>
+    </div>
+</div>
 
-                        {% if analysis_details %}
+
+        <div class="result-row">
+            <div class="result-item">
+                <div class="result-label">Phishing Probability</div>
+                <div class="result-value">{{ phishing_prob|floatformat:2|default:'0' }}%</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Safe Score</div>
+                <div class="result-value">{{ safe_score|floatformat:2|default:'0' }}%</div>
+            </div>
+        </div>
+
+                    <div class="result-row">
+                        <div class="result-item">
+                             <div class="result-label">Analysis Timestamp</div>
+                            <div class="result-value">{{ analysis_time|default:'Just now' }}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Model Used</div>
+                            <div class="result-value">{{ model_name|default:'CyberShield v1.0' }}</div>
+                        </div>
+                    </div>
+
+{% if tactics %}
+<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(15, 255, 255, 0.1);">
+
+    <div class="tactics-label" style="margin-bottom: 10px;">
+        Detected Attack Tactics
+    </div>
+
+    <div class="tactics-list">
+        {% for tactic in tactics %}
+        <span class="tactic-tag">{{ tactic }}</span>
+        {% endfor %}
+    </div>
+
+</div>
+{% endif %}
+
+{% if url_analysis.link_count > 0 %}
+<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(15, 255, 255, 0.1);">
+
+    <div class="tactics-label" style="margin-bottom: 10px;">
+        Link Security Analysis
+    </div>
+
+    <p>Links found: {{ url_analysis.link_count }}</p>
+    <p>Links needing review: {{ url_analysis.links_needing_review }}</p>
+
+    {% for link in url_analysis.urls %}
+    <div style="margin-top: 10px; padding: 12px; border-radius: 8px; background: rgba(15, 255, 255, 0.05);">
+
+        <div style="word-break: break-all;">
+            {{ link.url }}
+        </div>
+
+        {% if link.needs_review %}
+        <div style="color: #ff5555; margin-top: 6px;">
+            Suspicious indicators found - review this link carefully.
+        </div>
+
+        {% for indicator in link.indicators %}
+        <div style="margin-top: 4px;">
+            - {{ indicator }}
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div style="color: #00c98d; margin-top: 6px;">
+            No suspicious URL indicators found.
+        </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+
+</div>
+{% endif %}
+
+
+{% if analysis_details %}
                         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(15, 255, 255, 0.1);">
                             <div class="result-label" style="margin-bottom: 10px;">Analysis Details</div>
                             <div class="feed-text" style="color: var(--text-secondary);">
@@ -3546,7 +3497,16 @@ verdict-safe
                 <option value="email">Email</option>
                 <option value="sms/chat">SMS/Chat</option>
 
-            </select>
+
+                      </select>
+
+            <form method="post" action="{% url 'clear_history' %}"
+                  onsubmit="return confirm('Are you sure you want to permanently delete your scan history? This cannot be undone.');">
+                {% csrf_token %}
+                <button type="submit" class="button button-danger">
+                    Clear My History
+                </button>
+            </form>
 
         </div>
 
@@ -3811,48 +3771,43 @@ verdict-safe
                 CyberShield Browser Protection
             </div>
 
-            <span class="feed-badge badge-suspicious">
-                LAUNCHING SOON
+            <span class="feed-badge badge-safe">
+               ACTIVE
             </span>
 
         </div>
 
-        <div
-            class="feed-text"
-            style="
-                margin-top: 14px;
-                line-height: 1.8;
-            "
-        >
+       <div
+    class="feed-text"
+    style="
+        margin-top: 14px;
+        line-height: 1.8;
+    "
+>
+    CyberShieldAI Chrome extension is successfully
+    integrated with the Django detection backend.
 
-            CyberShieldAI browser protection is currently
-            under development and planned for future
-            integration.
+    <br><br>
 
-            <br><br>
+    Implemented features:
 
-            The upcoming browser extension is designed to
-            provide:
+    <br><br>
 
-            <br><br>
+    🛡 Manual Selected Text Scanning<br>
+    📧 Email Phishing Detection<br>
+    📱 SMS Message Detection<br>
+    🧠 Machine Learning Threat Analysis<br>
+    🔐 Secure Bearer Token Authentication<br>
+    📊 Phishing Probability and Safety Score<br>
+    🚨 Suspicious Tactic Identification
 
-            🛡 Real-Time URL Scanning<br>
-            ⚠ Phishing Website Detection<br>
-            🔐 Fake Login Page Identification<br>
-            🧠 AI-Powered Threat Analysis<br>
-            🌐 Secure Browsing Protection<br>
-            🚨 Instant Threat Warnings
+    <br><br>
 
-            <br><br>
-
-            The extension architecture is designed to
-            communicate directly with the CyberShieldAI
-            threat engine for analyzing suspicious
-            webpages, fake login portals, malicious
-            redirects, and social engineering attempts
-            in real time.
-
-        </div>
+    Users can select suspicious text from webpages,
+    including email content, and submit it for
+    analysis through the CyberShieldAI detection API.
+    Results are displayed directly in the extension.
+</div>
 
     </div>
 
@@ -3937,7 +3892,7 @@ verdict-safe
 // ======================================
 
 const navItems =
-    document.querySelectorAll('.nav-item');
+    document.querySelectorAll('.nav-item[data-page]');
 
 const pageSections =
     document.querySelectorAll('.page-section');
@@ -3950,6 +3905,19 @@ const sidebar =
 
 const menuToggle =
     document.querySelector('.menu-toggle');
+
+// Apply the server-rendered phishing probability to the result bar.
+document.querySelectorAll('.result-bar[data-phishing-probability]').forEach(bar => {
+    const fill = bar.querySelector('.result-fill');
+    const probability = Number.parseFloat(bar.dataset.phishingProbability);
+
+    if (fill) {
+        const safeProbability = Number.isFinite(probability)
+            ? Math.min(100, Math.max(0, probability))
+            : 0;
+        fill.style.width = `${safeProbability}%`;
+    }
+});
 
 
 // PAGE TITLES
@@ -4130,18 +4098,14 @@ window.addEventListener(
 // AUTO OPEN MANUAL ANALYSIS
 // ======================================
 
-{% if result %}
+const hasAnalysisResult =
+    document.body.dataset.analysisResult === 'true';
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
+if (hasAnalysisResult) {
+    document.addEventListener('DOMContentLoaded', () => {
         showPage('manual-analysis');
-
-    }
-);
-
-{% endif %}
+    });
+}
 
 
 // ======================================
@@ -4327,38 +4291,47 @@ function applyHistoryFilters(){
 // SEARCH HIGHLIGHT
 // ======================================
 
-function highlightSearch(term){
+function highlightSearch(term) {
+    document.querySelectorAll('.searchable').forEach(el => {
+        const originalText = el.textContent || '';
+        el.replaceChildren();
 
-    document
-        .querySelectorAll('.searchable')
-        .forEach(el => {
-
-        const originalText =
-            el.textContent;
-
-        if(term.length > 0){
-
-            const regex =
-                new RegExp(
-                    `(${term})`,
-                    'gi'
-                );
-
-            el.innerHTML =
-                originalText.replace(
-                    regex,
-                    '<mark>$1</mark>'
-                );
-
-        } else {
-
-            el.innerHTML =
-                originalText;
-
+        if (!term) {
+            el.textContent = originalText;
+            return;
         }
 
-    });
+        const escapedTerm = term.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            '\\$&'
+        );
 
+        const regex = new RegExp(escapedTerm, 'gi');
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(originalText)) !== null) {
+            el.appendChild(
+                document.createTextNode(
+                    originalText.slice(lastIndex, match.index)
+                )
+            );
+
+            const mark = document.createElement('mark');
+            mark.textContent = match[0];
+            el.appendChild(mark);
+
+            lastIndex = regex.lastIndex;
+
+            if (match[0].length === 0) {
+                regex.lastIndex++;
+            }
+        }
+
+        el.appendChild(
+            document.createTextNode(originalText.slice(lastIndex))
+        );
+    });
 }
 
 
@@ -4392,98 +4365,74 @@ if(historyFilter){
 const topSearch =
     document.querySelector('.search-box');
 
-if(topSearch){
+    if (topSearch) {
+    topSearch.addEventListener('input', function () {
+        const value = this.value.trim();
 
-    topSearch.addEventListener('input', function(){
+        document.querySelectorAll('.feed-item').forEach(card => {
+            const title = card.querySelector('.feed-title');
+            const preview = card.querySelector('.feed-preview');
 
-        const value =
-            this.value.toLowerCase();
+            const originalTitle = title?.dataset.originalText ??
+                title?.textContent ?? '';
 
-        const threatCards =
-            document.querySelectorAll('.feed-item');
+            const originalPreview = preview?.dataset.originalText ??
+                preview?.textContent ?? '';
 
-        threatCards.forEach(card => {
-
-            const text =
-                card.innerText.toLowerCase();
-
-            const title =
-                card.querySelector('.feed-title');
-
-            const preview =
-                card.querySelector('.feed-preview');
-
-            // RESET
-            if(title){
-
-                title.innerHTML =
-                    title.textContent;
-
+            if (title && !title.dataset.originalText) {
+                title.dataset.originalText = originalTitle;
             }
 
-            if(preview){
-
-                preview.innerHTML =
-                    preview.textContent;
-
+            if (preview && !preview.dataset.originalText) {
+                preview.dataset.originalText = originalPreview;
             }
 
-            // SHOW/HIDE
-            if(text.includes(value)){
+            const searchableText =
+                (originalTitle + ' ' + originalPreview).toLowerCase();
 
-                card.style.display = '';
+            card.style.display =
+                searchableText.includes(value.toLowerCase()) ? '' : 'none';
 
-                // HIGHLIGHT TITLE
-                if(value.length > 0 && title){
+            [title, preview].forEach(element => {
+                if (!element) return;
 
-                    const regex =
-                        new RegExp(
-                            `(${value})`,
-                            'gi'
-                        );
+                const original = element.dataset.originalText;
+                element.replaceChildren();
 
-                    title.innerHTML =
-                        title.textContent.replace(
-                            regex,
-                            '<mark>$1</mark>'
-                        );
-
+                if (!value) {
+                    element.textContent = original;
+                    return;
                 }
 
-                // HIGHLIGHT PREVIEW
-                if(value.length > 0 && preview){
+                const escapedValue = value.replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    '\\$&'
+                );
 
-                    const regex =
-                        new RegExp(
-                            `(${value})`,
-                            'gi'
-                        );
+                const regex = new RegExp(escapedValue, 'gi');
+                let lastIndex = 0;
+                let match;
 
-                    preview.innerHTML =
-                        preview.textContent.replace(
-                            regex,
-                            '<mark>$1</mark>'
-                        );
+                while ((match = regex.exec(original)) !== null) {
+                    element.appendChild(
+                        document.createTextNode(
+                            original.slice(lastIndex, match.index)
+                        )
+                    );
 
+                    const mark = document.createElement('mark');
+                    mark.textContent = match[0];
+                    element.appendChild(mark);
+
+                    lastIndex = regex.lastIndex;
                 }
 
-            } else {
-
-                card.style.display = 'none';
-
-            }
-
-            // EMPTY SEARCH
-            if(value === ''){
-
-                card.style.display = '';
-
-            }
-
+                element.appendChild(
+                    document.createTextNode(original.slice(lastIndex))
+                );
+            });
         });
-
     });
-
 }
 
 // ======================================
@@ -4540,7 +4489,7 @@ document.addEventListener('click', (e) => {
         &&
         !notificationPanel.contains(e.target)
         &&
-        !notificationBtn.contains(e.target)
+        (!notificationBtn || !notificationBtn.contains(e.target))
     ){
 
         notificationPanel.style.display =
@@ -4550,80 +4499,6 @@ document.addEventListener('click', (e) => {
 
 });
 
-//email monitor
-
-
-const emailForm =
-document.getElementById(
-    "emailForm"
-);
-
-if(emailForm){
-
-    emailForm.addEventListener(
-        "submit",
-        async function(e){
-
-            const provider =
-                document.getElementById(
-                    "provider"
-                ).value;
-
-            const email =
-                document.getElementById(
-                    "email"
-                ).value;
-
-            const password =
-                document.getElementById(
-                    "password"
-                ).value;
-
-            console.log({
-                provider,
-                email,
-                password
-            });
-
-        }
-    );
-
-}
-
-
-
-async function refreshEmailFeed() {
-
-    console.log(
-        "Refreshing feed..."
-    );
-
-    try {
-
-        const response =
-        await fetch(
-            "/get-latest-emails/"
-        );
-
-        const data =
-        await response.json();
-
-        console.log(data);
-
-    }
-
-    catch(error) {
-
-        console.log(error);
-
-    }
-
-}
-
-setInterval(
-    refreshEmailFeed,
-    100
-);
 
 
 // email monitor expand
