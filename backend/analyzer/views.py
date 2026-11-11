@@ -23,6 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 from dashboard.models import ThreatHistory, ExtensionAPIToken
 
 from .services import analyze_text
+from .gmail_service import dashboard_gmail_data
 
 
 User = get_user_model()
@@ -288,9 +289,10 @@ def home(request):
     # DEFAULT VALUES
     # --------------------------------------------------------
 
-    email_connected = False
-    connected_email = ""
-    provider = "Secure Mail"
+    gmail_dashboard = dashboard_gmail_data(request.user)
+    email_connected = gmail_dashboard["email_connected"]
+    connected_email = gmail_dashboard["email_address"]
+    provider = gmail_dashboard["provider"]
 
     # --------------------------------------------------------
     # MANUAL EMAIL / SMS ANALYSIS
@@ -441,15 +443,15 @@ def home(request):
     # Live email integration is disabled.
     # ========================================================
 
-    monitor_email_history = []
-    monitor_total_scanned = 0
-    monitor_phishing_count = 0
-    monitor_safe_count = 0
-    monitor_safe_percentage = 0
+    monitor_email_history = gmail_dashboard["monitor_email_history"]
+    monitor_total_scanned = gmail_dashboard["monitor_total_scanned"]
+    monitor_phishing_count = gmail_dashboard["monitor_phishing_count"]
+    monitor_safe_count = gmail_dashboard["monitor_safe_count"]
+    monitor_safe_percentage = gmail_dashboard["monitor_safe_percentage"]
 
-    monitor_today_scanned = 0
-    monitor_today_phishing = 0
-    monitor_today_safe = 0
+    monitor_today_scanned = gmail_dashboard["monitor_today_scanned"]
+    monitor_today_phishing = gmail_dashboard["monitor_today_phishing"]
+    monitor_today_safe = gmail_dashboard["monitor_today_safe"]
 
     risk_level = "LOW"
 
@@ -494,6 +496,8 @@ def home(request):
             "email_connected": email_connected,
             "provider": provider,
             "email_address": connected_email,
+            "last_email_scan": gmail_dashboard["last_email_scan"],
+            "gmail_connection": gmail_dashboard["gmail_connection"],
 
             "monitor_email_history": monitor_email_history,
             "monitor_total_scanned": monitor_total_scanned,
