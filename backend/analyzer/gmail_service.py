@@ -1,5 +1,8 @@
 import base64
 import json
+import re
+from datetime import timedelta
+from urllib.parse import urlencode, urlsplit
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -18,6 +21,7 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me"
 TIMEOUT_SECONDS = 20
 MAX_EMAIL_TEXT = 20000
+GMAIL_HISTORY_RETENTION_DAYS = 30
 
 
 class GmailAPIError(RuntimeError):
@@ -203,6 +207,39 @@ def _header(headers, name):
     return ""
 
 
+def _extract_url_domains(text):
+    """Return a small, de-duplicated list of URL hosts and paths without query data."""
+    found = []
+    seen = set()
+    for match in re.findall(r"https?://[^\\s<>\\\"']+", text or "", flags=re.IGNORECASE):
+        candidate = match.rstrip(".,;:!?)]}")
+        parsed = urlsplit(candidate)
+        hostname = (parsed.hostname or "").lower()
+        if not hostname:
+            continue
+        # Keep enough context to identify the destination, but discard query
+        # strings and fragments that may contain personal or tracking tokens.
+        destination = hostname
+        if parsed.path and parsed.path != "/":
+            destination += parsed.path[:120]
+        if destination not in seen:
+            seen.add(destination)
+            found.append(destination)
+        if len(found) >= 5:
+            break
+    return found
+
+
+def purge_expired_gmail_history(now=None):
+    """Delete only automatic Gmail-monitoring records older than 30 days."""
+    cutoff = (now or timezone.now()) - timedelta(days=GMAIL_HISTORY_RETENTION_DAYS)
+    deleted, _ = ThreatHistory.objects.filter(
+        source_type="gmail",
+        created_at__lt=cutoff,
+    ).delete()
+    return deleted
+
+
 def extract_message(message):
     payload = message.get("payload") or {}
     headers = payload.get("headers") or []
@@ -220,11 +257,22 @@ def extract_message(message):
         f"Date: {received}\n\n"
         f"{body}"
     ).strip()
+    url_domains = _extract_url_domains(body)
+    history_lines = [
+        f"From: {sender}",
+        f"Subject: {subject}",
+        f"Received: {received}",
+    ]
+    if url_domains:
+        history_lines.append("URL destinations: " + ", ".join(url_domains))
     return {
         "sender": sender,
         "subject": subject,
         "received": received,
+        # Full text is used only in memory for detection and is never saved.
         "content": combined[:MAX_EMAIL_TEXT],
+        # Retain only limited metadata for the user's 30-day Gmail history.
+        "history_content": "\\n".join(history_lines)[:2000],
     }
 
 
@@ -355,7 +403,7 @@ def scan_connection(connection):
         ThreatHistory.objects.create(
             user=connection.user,
             source_type="gmail",
-            content=content,
+            content=details["history_content"],
             result=analysis["result"],
             phishing_probability=analysis["phishing_probability"],
             tactics=analysis["tactics"],
@@ -390,7 +438,16 @@ def scan_connection(connection):
 
 
 def run_gmail_monitoring():
-    summary = {"accounts_checked": 0, "emails_scanned": 0, "threats_found": 0, "errors": 0}
+    # Run retention cleanup with the scheduled monitor. Only source_type="gmail"
+    # records are eligible; manual analysis history is never touched.
+    expired_deleted = purge_expired_gmail_history()
+    summary = {
+        "accounts_checked": 0,
+        "emails_scanned": 0,
+        "threats_found": 0,
+        "errors": 0,
+        "expired_gmail_history_deleted": expired_deleted,
+    }
     for connection in GmailConnection.objects.filter(is_active=True).select_related("user").iterator():
         summary["accounts_checked"] += 1
         try:
