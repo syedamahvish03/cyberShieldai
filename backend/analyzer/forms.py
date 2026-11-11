@@ -46,7 +46,7 @@ class EmailRegistrationForm(UserCreationForm):
 class EmailLoginForm(AuthenticationForm):
     username = forms.CharField(
         label="Email address",
-        widget=forms.EmailInput(attrs={
+        widget=forms.TextInput(attrs={
             "autofocus": True,
             "autocomplete": "username",
             "placeholder": "you@example.com",
