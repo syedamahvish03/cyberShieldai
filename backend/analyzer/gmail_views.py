@@ -80,12 +80,8 @@ def gmail_oauth_callback(request):
         refresh_token = token_data.get("refresh_token")
 
         existing = GmailConnection.objects.filter(user=request.user).first()
-        if not refresh_token and existing:
-            from .gmail_service import decrypt_refresh_token
-            refresh_token = decrypt_refresh_token(existing.encrypted_refresh_token)
-
-        if not access_token or not refresh_token:
-            raise RuntimeError("Google did not provide the required Gmail authorization.")
+        if not access_token:
+            raise RuntimeError("Google did not provide an access token.")
 
         profile_request = Request(
             GOOGLE_PROFILE_URL,
@@ -99,6 +95,16 @@ def gmail_oauth_callback(request):
         history_id = str(profile.get("historyId") or "")
         if not gmail_email or not history_id:
             raise RuntimeError("Google did not return the Gmail account details.")
+
+        # Reuse a previously saved refresh token only if Google confirms this
+        # is the same Gmail mailbox. Never attach an old mailbox token to a
+        # newly selected Gmail account.
+        if not refresh_token and existing and existing.gmail_email.lower() == gmail_email.lower():
+            from .gmail_service import decrypt_refresh_token
+            refresh_token = decrypt_refresh_token(existing.encrypted_refresh_token)
+
+        if not refresh_token:
+            raise RuntimeError("Google did not provide a refresh token. Please authorize Gmail again.")
 
         GmailConnection.objects.update_or_create(
             user=request.user,
