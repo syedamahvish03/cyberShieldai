@@ -29,5 +29,7 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install dependencies
         run: python -m pip install -r ../requirements.txt
+      - name: Create temporary ML models for CI tests
+        run: python ../.github/scripts/create_ci_test_models.py
       - name: Run Django regression tests
         run: python manage.py test
