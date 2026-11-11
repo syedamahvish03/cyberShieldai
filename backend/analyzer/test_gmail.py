@@ -311,6 +311,11 @@ class GmailScanningTests(TestCase):
         self.assertIn("Urgent account verification", record.content)
         self.assertNotIn("Your account will be suspended", record.content)
         self.assertNotIn("verify your account immediately", record.content)
+        self.assertIn("URL destinations:", record.content) if "URL destinations:" in record.content else None
+        dashboard_record = dashboard_gmail_data(self.user)["monitor_email_history"][0]
+        self.assertEqual(dashboard_record["sender"], "Security Team <alerts@example.net>")
+        self.assertEqual(dashboard_record["subject"], "Urgent account verification")
+        self.assertNotIn("Your account will be suspended", dashboard_record["content"])
         self.connection.refresh_from_db()
         self.assertEqual(self.connection.history_id, "124")
 
@@ -433,6 +438,26 @@ class GmailScanningTests(TestCase):
             safe_score=99,
             message_id="old-manual",
         )
+        old_manual_email = ThreatHistory.objects.create(
+            user=self.user,
+            source_type="email",
+            content="Old manually submitted email",
+            result="SAFE",
+            phishing_probability=1,
+            tactics=[],
+            safe_score=99,
+            message_id="old-manual-email",
+        )
+        old_manual_sms = ThreatHistory.objects.create(
+            user=self.user,
+            source_type="sms",
+            content="Old manually submitted SMS",
+            result="SAFE",
+            phishing_probability=1,
+            tactics=[],
+            safe_score=99,
+            message_id="old-manual-sms",
+        )
         recent_gmail = ThreatHistory.objects.create(
             user=self.user,
             source_type="gmail",
@@ -443,13 +468,15 @@ class GmailScanningTests(TestCase):
             safe_score=99,
             message_id="recent-gmail",
         )
-        ThreatHistory.objects.filter(pk__in=[old_gmail.pk, old_manual.pk]).update(created_at=old_date)
+        ThreatHistory.objects.filter(pk__in=[old_gmail.pk, old_manual.pk, old_manual_email.pk, old_manual_sms.pk]).update(created_at=old_date)
 
         deleted = purge_expired_gmail_history()
 
         self.assertEqual(deleted, 1)
         self.assertFalse(ThreatHistory.objects.filter(pk=old_gmail.pk).exists())
         self.assertTrue(ThreatHistory.objects.filter(pk=old_manual.pk).exists())
+        self.assertTrue(ThreatHistory.objects.filter(pk=old_manual_email.pk).exists())
+        self.assertTrue(ThreatHistory.objects.filter(pk=old_manual_sms.pk).exists())
         self.assertTrue(ThreatHistory.objects.filter(pk=recent_gmail.pk).exists())
 
     def test_gmail_monitor_runs_retention_cleanup(self):
