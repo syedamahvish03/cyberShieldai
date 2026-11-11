@@ -163,9 +163,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Email-only authentication. Do not add ModelBackend here: it would allow
+# the default username-based login path as a fallback.
 AUTHENTICATION_BACKENDS = [
-    "analyzer.authentication.EmailOrUsernameBackend",
-    "django.contrib.auth.backends.ModelBackend",
+    "analyzer.authentication.EmailAuthenticationBackend",
 ]
 
 # Authentication redirects
