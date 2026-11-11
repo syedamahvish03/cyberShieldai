@@ -120,7 +120,7 @@
 <body>
     <main class="register-card">
         <h1>CyberShield AI</h1>
-        <p class="subtitle">Create your security dashboard account</p>
+        <p class="subtitle">Verify your email first, then create your password</p>
 
         <form method="post">
             {% csrf_token %}
@@ -143,7 +143,7 @@
 
             {{ form.non_field_errors }}
 
-            <button type="submit">Create Account</button>
+            <button type="submit">Continue with Email</button>
         </form>
 
         <p class="footer">
