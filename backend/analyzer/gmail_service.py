@@ -4,7 +4,6 @@ import re
 from datetime import timedelta
 from urllib.parse import urlencode, urlsplit
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -211,7 +210,7 @@ def _extract_url_domains(text):
     """Return a small, de-duplicated list of URL hosts and paths without query data."""
     found = []
     seen = set()
-    for match in re.findall(r"https?://[^\\s<>\\\"']+", text or "", flags=re.IGNORECASE):
+    for match in re.findall(r"https?://\\S+", text or "", flags=re.IGNORECASE):
         candidate = match.rstrip(".,;:!?)]}")
         parsed = urlsplit(candidate)
         hostname = (parsed.hostname or "").lower()
