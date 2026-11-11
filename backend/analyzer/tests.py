@@ -293,6 +293,54 @@ class UserHistoryIsolationTests(TestCase):
         self.assertIn(self.scan_b.id, visible_ids)
         self.assertNotIn(self.scan_a.id, visible_ids)
 
+    def test_dashboard_does_not_render_another_users_private_scan_content(self):
+        self.client.force_login(self.user_a)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Private test message belonging to user A")
+        self.assertNotContains(response, "Private test message belonging to user B")
+
+        self.client.force_login(self.user_b)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Private test message belonging to user B")
+        self.assertNotContains(response, "Private test message belonging to user A")
+
+    def test_all_dashboard_history_collections_are_user_scoped(self):
+        self.client.force_login(self.user_a)
+
+        response = self.client.get(reverse("dashboard"))
+
+        for collection_name in ("history_items", "feed_items", "dashboard_items"):
+            with self.subTest(collection=collection_name):
+                visible_ids = list(
+                    response.context[collection_name].values_list("id", flat=True)
+                )
+                self.assertIn(self.scan_a.id, visible_ids)
+                self.assertNotIn(self.scan_b.id, visible_ids)
+
+        self.assertEqual(response.context["email_scanned"], 1)
+        self.assertEqual(response.context["threat_count"], 1)
+
+        self.client.force_login(self.user_b)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.context["email_scanned"], 1)
+        self.assertEqual(response.context["threat_count"], 1)
+
+        for collection_name in ("history_items", "feed_items", "dashboard_items"):
+            with self.subTest(collection=collection_name):
+                visible_ids = list(
+                    response.context[collection_name].values_list("id", flat=True)
+                )
+                self.assertIn(self.scan_b.id, visible_ids)
+                self.assertNotIn(self.scan_a.id, visible_ids)
+
     def test_administrator_cannot_see_other_users_history(self):
         self.client.force_login(self.admin)
 
