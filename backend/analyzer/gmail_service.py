@@ -1,8 +1,5 @@
 import base64
-import html
 import json
-import re
-from email.utils import parseaddr
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
