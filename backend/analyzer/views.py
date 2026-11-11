@@ -119,6 +119,7 @@ def verify_email(request, token):
         password_form.save()
         user.is_active = True
         user.save(update_fields=["is_active"])
+        request.session["show_gmail_connect_prompt"] = True
         return render(
             request,
             "registration/verification_result.html",
@@ -291,6 +292,10 @@ def home(request):
 
     gmail_dashboard = dashboard_gmail_data(request.user)
     email_connected = gmail_dashboard["email_connected"]
+    show_gmail_connect_prompt = (
+        request.session.pop("show_gmail_connect_prompt", False)
+        and not email_connected
+    )
     connected_email = gmail_dashboard["email_address"]
     provider = gmail_dashboard["provider"]
 
@@ -498,6 +503,7 @@ def home(request):
             "email_address": connected_email,
             "last_email_scan": gmail_dashboard["last_email_scan"],
             "gmail_connection": gmail_dashboard["gmail_connection"],
+            "show_gmail_connect_prompt": show_gmail_connect_prompt,
 
             "monitor_email_history": monitor_email_history,
             "monitor_total_scanned": monitor_total_scanned,
