@@ -149,6 +149,10 @@
       </form>
 
       <p class="footer">
+        Didn't receive your verification email?
+        <a href="{% url 'resend_verification_email' %}">Resend verification</a>
+      </p>
+      <p class="footer">
         Don't have an account?
         <a href="{% url 'register' %}">Create Account</a>
       </p>
