@@ -52,3 +52,17 @@ class EmailLoginForm(AuthenticationForm):
             "placeholder": "you@example.com",
         }),
     )
+
+
+class AccountEmailForm(forms.Form):
+    email = forms.EmailField(max_length=150, label="Email address")
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        if User.objects.filter(email__iexact=email).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError("This email address is already linked to another account.")
+        return email
