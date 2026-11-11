@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify your email - CyberShield AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 20px; background: linear-gradient(135deg, #050812, #0f1a3d, #050812); color: #e8f0ff; font-family: "Segoe UI", Arial, sans-serif; }
+    main { width: 100%; max-width: 460px; padding: 36px; text-align: center; background: rgba(20, 28, 56, .94); border: 1px solid rgba(15, 255, 255, .25); border-radius: 14px; }
+    h1 { color: #00ffe0; font-size: 25px; }
+    p { color: #a0b4d4; line-height: 1.6; }
+    a { color: #00ffe0; }
+  
+    body{background:radial-gradient(ellipse at 70% 10%,rgba(66,133,183,.15),transparent 42%),linear-gradient(145deg,#101d2b,#080e17)!important;color:#edf3fa!important;font-family:'Segoe UI',Arial,sans-serif!important}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(171,199,226,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(171,199,226,.025) 1px,transparent 1px);background-size:52px 52px}
+    main{position:relative;width:min(100%,490px)!important;padding:42px!important;background:rgba(12,21,32,.94)!important;border:1px solid rgba(164,190,220,.17)!important;border-radius:18px!important;box-shadow:0 24px 80px rgba(0,0,0,.38)!important;text-align:left}
+    h1{font-family:'Segoe UI',Arial,sans-serif!important;color:#eaf4fc!important;font-size:26px!important;letter-spacing:-.7px}
+    p{color:#9fb0c3!important;font-size:13px;line-height:1.8}
+    label{display:block;margin:18px 0 8px;color:#d9e4ee;font-size:12px;font-weight:600}
+    input{width:100%;min-height:47px;padding:0 14px!important;border:1px solid rgba(164,190,220,.2)!important;border-radius:9px!important;background:#0d1723!important;color:#f2f7fc!important}
+    button{width:100%;min-height:48px;margin-top:22px;padding:12px 18px!important;border:1px solid rgba(191,226,248,.3)!important;border-radius:9px!important;background:linear-gradient(105deg,#c6e2f3,#8fc6e8)!important;color:#0b1a28!important;font-weight:700}
+    a{color:#9bdcff!important}
+    @media(max-width:520px){main{padding:28px!important}}
+
+</style>
+</head>
+<body>
+  <main>
+    <h1>Check your inbox</h1>
+    <p>Your CyberShield AI account has been created, but it is not active yet.</p>
+    <p>Open the verification email we sent and follow its link. The link expires after 24 hours.</p>
+    <p>If you do not receive the email, check your spam folder or <a href="{% url 'resend_verification_email' %}">request another verification email</a>.</p>
+    <p><a href="{% url 'login' %}">Return to sign in</a></p>
+  </main>
+</body>
+</html>

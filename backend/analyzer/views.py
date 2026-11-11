@@ -3,10 +3,17 @@ import hashlib
 import secrets
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.core import signing
+from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired
+from django.db import IntegrityError, transaction
+from .forms import EmailRegistrationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
@@ -16,10 +23,149 @@ from django.views.decorators.csrf import csrf_exempt
 from dashboard.models import ThreatHistory, ExtensionAPIToken
 
 from .services import analyze_text
+from .gmail_service import dashboard_gmail_data
+
+
+User = get_user_model()
 
 
 # Maximum JSON request size: 100 KB.
 MAX_API_BODY_BYTES = 100_000
+
+
+# ============================================================
+# EMAIL OWNERSHIP VERIFICATION
+# ============================================================
+
+EMAIL_VERIFICATION_SALT = "analyzer.email-verification"
+EMAIL_VERIFICATION_MAX_AGE = 60 * 60 * 24
+
+
+def send_verification_email(request, user):
+    token = signing.dumps(
+        {"user_id": user.pk, "email": user.email},
+        salt=EMAIL_VERIFICATION_SALT,
+    )
+    verification_url = request.build_absolute_uri(
+        reverse("verify_email", kwargs={"token": token})
+    )
+    send_mail(
+        subject="Verify your CyberShield AI email address",
+        message=(
+            "Welcome to CyberShield AI.\n\n"
+            "Please verify that you own this email address by opening "
+            "the link below:\n\n"
+            f"{verification_url}\n\n"
+            "This link expires in 24 hours. If you did not create this "
+            "account, you can ignore this email."
+        ),
+        from_email=None,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
+
+def registration_verification_pending(request):
+    return render(request, "registration/verification_pending.html")
+
+
+def verify_email(request, token):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    try:
+        payload = signing.loads(
+            token,
+            salt=EMAIL_VERIFICATION_SALT,
+            max_age=EMAIL_VERIFICATION_MAX_AGE,
+        )
+    except SignatureExpired:
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "expired"},
+        )
+    except (BadSignature, TypeError, ValueError):
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "invalid"},
+        )
+
+    try:
+        user = User.objects.get(
+            pk=payload.get("user_id"),
+            email__iexact=payload.get("email", ""),
+        )
+    except (User.DoesNotExist, TypeError, ValueError):
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "invalid"},
+        )
+
+    if user.is_active:
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "verified"},
+        )
+
+    password_form = SetPasswordForm(
+        user,
+        request.POST or None,
+    )
+    if request.method == "POST" and password_form.is_valid():
+        password_form.save()
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        request.session["show_gmail_connect_prompt"] = True
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "verified"},
+        )
+
+    # The account has no usable password until the email owner sets one here.
+    return render(
+        request,
+        "registration/verification_result.html",
+        {
+            "status": "confirm",
+            "password_form": password_form,
+        },
+    )
+
+
+def resend_verification_email(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    delivery_error = False
+    if request.method == "POST":
+        email = (request.POST.get("email") or "").strip()
+        if email:
+            user = User.objects.filter(
+                email__iexact=email,
+                is_active=False,
+            ).first()
+            if user:
+                try:
+                    send_verification_email(request, user)
+                except (OSError, RuntimeError, ValueError):
+                    delivery_error = True
+
+        # Do not reveal whether an email address has an account.
+        return render(
+            request,
+            "registration/resend_verification.html",
+            {
+                "submitted": True,
+                "delivery_error": delivery_error,
+            },
+        )
+
+    return render(request, "registration/resend_verification.html")
 
 
 # ============================================================
@@ -32,14 +178,32 @@ def register(request):
         return redirect("dashboard")
 
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = EmailRegistrationForm(request.POST)
 
         if form.is_valid():
-            form.save()
-            return redirect("login")
+            try:
+                with transaction.atomic():
+                    user = form.save()
+            except IntegrityError:
+                # The database constraint is the final safeguard if two
+                # registrations race after the form-level duplicate check.
+                form.add_error(
+                    "email",
+                    "An account with this email already exists. Please log in instead.",
+                )
+            else:
+                try:
+                    send_verification_email(request, user)
+                except (OSError, RuntimeError, ValueError):
+                    messages.warning(
+                        request,
+                        "Your account is saved but the verification email could not be sent. "
+                        "Use the resend verification page after email delivery is configured.",
+                    )
+                return redirect("registration_verification_pending")
 
     else:
-        form = UserCreationForm()
+        form = EmailRegistrationForm()
 
     return render(
         request,
@@ -126,9 +290,14 @@ def home(request):
     # DEFAULT VALUES
     # --------------------------------------------------------
 
-    email_connected = False
-    connected_email = ""
-    provider = "Secure Mail"
+    gmail_dashboard = dashboard_gmail_data(request.user)
+    email_connected = gmail_dashboard["email_connected"]
+    show_gmail_connect_prompt = (
+        request.session.pop("show_gmail_connect_prompt", False)
+        and not email_connected
+    )
+    connected_email = gmail_dashboard["email_address"]
+    provider = gmail_dashboard["provider"]
 
     # --------------------------------------------------------
     # MANUAL EMAIL / SMS ANALYSIS
@@ -279,15 +448,15 @@ def home(request):
     # Live email integration is disabled.
     # ========================================================
 
-    monitor_email_history = []
-    monitor_total_scanned = 0
-    monitor_phishing_count = 0
-    monitor_safe_count = 0
-    monitor_safe_percentage = 0
+    monitor_email_history = gmail_dashboard["monitor_email_history"]
+    monitor_total_scanned = gmail_dashboard["monitor_total_scanned"]
+    monitor_phishing_count = gmail_dashboard["monitor_phishing_count"]
+    monitor_safe_count = gmail_dashboard["monitor_safe_count"]
+    monitor_safe_percentage = gmail_dashboard["monitor_safe_percentage"]
 
-    monitor_today_scanned = 0
-    monitor_today_phishing = 0
-    monitor_today_safe = 0
+    monitor_today_scanned = gmail_dashboard["monitor_today_scanned"]
+    monitor_today_phishing = gmail_dashboard["monitor_today_phishing"]
+    monitor_today_safe = gmail_dashboard["monitor_today_safe"]
 
     risk_level = "LOW"
 
@@ -332,6 +501,9 @@ def home(request):
             "email_connected": email_connected,
             "provider": provider,
             "email_address": connected_email,
+            "last_email_scan": gmail_dashboard["last_email_scan"],
+            "gmail_connection": gmail_dashboard["gmail_connection"],
+            "show_gmail_connect_prompt": show_gmail_connect_prompt,
 
             "monitor_email_history": monitor_email_history,
             "monitor_total_scanned": monitor_total_scanned,

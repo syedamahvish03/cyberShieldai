@@ -2095,10 +2095,249 @@ scrollbar-color: #00f0ff #101936;
     color: #00ffb3;
 }
 
-    </style>
+    
+/* ── CYBERSHIELD AI · OBSIDIAN EDITION ─────────────────────────────
+   Presentation layer only: existing page structure and behavior stay intact. */
+:root {
+  --primary:#9bdcff;
+  --primary-dark:#69bdf4;
+  --accent-red:#ff667d;
+  --accent-orange:#e9b86d;
+  --accent-green:#73d9b0;
+  --bg-dark:#0b1019;
+  --bg-darker:#070b12;
+  --card-bg:rgba(19,27,40,.88);
+  --border:rgba(164,190,220,.13);
+  --text-primary:#edf3fa;
+  --text-secondary:#aab8c9;
+  --text-muted:#748398;
+}
+html,body { background:#080d15; color:var(--text-primary); }
+body::before {
+  background:
+    radial-gradient(ellipse at 72% 0%,rgba(65,127,180,.11),transparent 42%),
+    radial-gradient(ellipse at 5% 90%,rgba(37,91,119,.08),transparent 38%),
+    linear-gradient(rgba(170,200,230,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(170,200,230,.018) 1px,transparent 1px);
+  background-size:auto,auto,48px 48px,48px 48px;
+}
+.container { background:linear-gradient(115deg,rgba(11,17,27,.98),rgba(9,14,23,.98)); }
+.sidebar {
+  width:258px; padding:25px 18px;
+  background:linear-gradient(180deg,#0d1521 0%,#0a1019 100%);
+  border-right:1px solid rgba(171,199,226,.12);
+}
+.logo { margin:0 8px 38px; gap:13px; }
+.logo-icon {
+  width:42px;height:42px;border-radius:13px;
+  background:linear-gradient(145deg,#d6e8f6,#78bde7);
+  color:#0a1724;box-shadow:0 8px 28px rgba(92,171,220,.16);
+  font-size:17px;
+}
+.logo-text { font-family:'Segoe UI',sans-serif;font-size:18px;letter-spacing:1.2px;font-weight:750; }
+.logo-ai { color:#9bdcff; }
+.nav-label { color:#64758a;letter-spacing:1.7px;font-size:10px;padding-left:11px; }
+.nav-item {
+  border-radius:10px;padding:12px 13px;margin-bottom:5px;
+  color:#9eafc3;font-size:13px;transition:background .2s,border-color .2s,transform .2s;
+}
+.nav-item:hover { background:rgba(130,184,221,.08);color:#d8ecfb;transform:translateX(2px); }
+.nav-item.active {
+  color:#c9eaff;background:linear-gradient(100deg,rgba(105,174,218,.17),rgba(105,174,218,.045));
+  border-color:rgba(143,198,232,.18);box-shadow:inset 2px 0 #8cc9ed;
+}
+.user-card { border-radius:11px;padding:12px 9px; }
+.user-avatar { background:linear-gradient(145deg,#d4e7f5,#80bfe4);color:#0a1724; }
+.header {
+  min-height:78px;padding:18px 34px;
+  background:rgba(11,17,27,.82);border-bottom:1px solid rgba(171,199,226,.11);
+  backdrop-filter:blur(18px);
+}
+.page-title { font-size:21px;letter-spacing:-.45px;font-weight:650; }
+.search-box {
+  background:rgba(20,30,43,.8);border:1px solid rgba(164,190,220,.16);
+  border-radius:10px;padding:10px 15px;color:#edf3fa;
+}
+.search-box:focus { border-color:#7bbce4;background:#111d2b; }
+.content { padding:32px 36px 44px; }
+.content::-webkit-scrollbar-thumb { background:rgba(147,185,216,.2); }
+.page-section.active { animation:luxuryReveal .32s ease both; }
+@keyframes luxuryReveal { from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none} }
+.card,.stat-card,.dashboard-card,.panel,.feed-item,.history-container,.content-card {
+  border-color:rgba(164,190,220,.13)!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.17);
+}
+button,.button { transition:transform .18s ease,box-shadow .18s ease,filter .18s ease; }
+button:hover,.button:hover { transform:translateY(-1px);filter:brightness(1.06); }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+  outline:2px solid #9bdcff;outline-offset:3px;
+}
+input,select,textarea {
+  border-radius:9px!important;
+}
+@media(max-width:900px) {
+  .sidebar { width:238px; }
+  .content { padding:25px 22px 36px; }
+  .header { padding:16px 22px; }
+}
+@media(max-width:768px) {
+  .sidebar { box-shadow:18px 0 50px rgba(0,0,0,.45); }
+  .content { padding:20px 15px 30px; }
+  .header { padding:15px 16px; }
+  .page-title { font-size:19px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important; }
+}
+
+
+/* OBISIDIAN EDITION — DETAILED DASHBOARD PASS */
+.dashboard-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding:30px 32px;margin:0 0 27px;border:1px solid rgba(164,190,220,.14);border-radius:18px;background:radial-gradient(ellipse at 88% 0%,rgba(115,170,207,.13),transparent 42%),linear-gradient(120deg,rgba(20,31,46,.96),rgba(13,21,33,.94));box-shadow:0 18px 42px rgba(0,0,0,.18);position:relative;overflow:hidden}
+.dashboard-intro:after{content:"";position:absolute;right:-42px;bottom:-100px;width:260px;height:260px;border:1px solid rgba(155,220,255,.09);border-radius:50%;box-shadow:0 0 0 24px rgba(155,220,255,.018),0 0 0 50px rgba(155,220,255,.012);pointer-events:none}
+.dashboard-intro-copy,.dashboard-intro-actions{position:relative;z-index:1}
+.dashboard-eyebrow{margin:0 0 10px;color:#8ca9c2;font-size:10px;font-weight:750;letter-spacing:2px;text-transform:uppercase}
+.dashboard-heading{color:#f0f5fb;font-size:clamp(24px,3vw,32px);font-weight:650;letter-spacing:-1px;line-height:1.15}
+.dashboard-description{max-width:610px;margin-top:10px;color:#9eafc2;font-size:13px;line-height:1.75}
+.dashboard-intro-actions{display:flex;gap:10px;flex-wrap:wrap}
+.dashboard-action{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:42px;padding:0 16px;border:1px solid rgba(164,190,220,.2);border-radius:10px;color:#c3d4e4;text-decoration:none;font-size:12px;font-weight:650;background:rgba(255,255,255,.025);transition:.2s ease}
+.dashboard-action:hover{border-color:rgba(155,220,255,.48);background:rgba(155,220,255,.07);color:#e7f5ff;transform:translateY(-1px)}
+.dashboard-action-primary{color:#0b1722;background:linear-gradient(135deg,#c6e3f5,#8fc7e9);border-color:transparent}
+.dashboard-action-primary:hover{color:#07121c;background:linear-gradient(135deg,#d8efff,#a5d7f3)}
+.dashboard-section-heading,.dashboard-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.dashboard-section-heading{margin:0 2px 15px}
+.dashboard-section-heading h2,.dashboard-panel-heading h2{color:#e8f0f8;font-size:15px;font-weight:650;letter-spacing:-.2px}
+.dashboard-section-heading p,.dashboard-panel-heading p{margin-top:5px;color:#788ba1;font-size:11px;line-height:1.5}
+.dashboard-updated-label{padding:6px 9px;border:1px solid rgba(164,190,220,.13);border-radius:7px;color:#8196ab;font-size:9px;font-weight:700;letter-spacing:1.3px}
+.dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.dashboard-grid .stat-card{min-width:0;min-height:148px;padding:21px 20px;border-radius:14px;background:linear-gradient(155deg,rgba(23,34,49,.96),rgba(15,24,37,.94));border:1px solid rgba(164,190,220,.13);box-shadow:0 12px 30px rgba(0,0,0,.13)}
+.dashboard-grid .stat-card:hover{border-color:rgba(155,220,255,.3)!important;background:linear-gradient(155deg,rgba(28,43,60,.98),rgba(16,27,41,.98));transform:translateY(-3px)}
+.dashboard-grid .stat-label{color:#91a4b8;font-size:10px;letter-spacing:1.15px;line-height:1.4}
+.dashboard-grid .stat-value{margin:11px 0 7px;color:#f1f6fb;font-size:31px;font-weight:650;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.dashboard-grid .stat-change{color:#91a6ba;font-size:11px;line-height:1.65}
+.dashboard-grid .status-badge{margin-top:12px;padding:5px 8px;border-radius:6px;font-size:9px;letter-spacing:.45px}
+.dashboard-grid .threat-card{background:linear-gradient(145deg,rgba(54,29,43,.54),rgba(18,25,38,.96));border-color:rgba(255,102,125,.2)!important}
+.dashboard-grid .threat-card .stat-value,.dashboard-grid .threat-card .stat-change{color:#ff8293}
+.dashboard-grid .threat-card .status-badge{color:#ff9aa8;background:rgba(255,102,125,.1)}
+.dashboard-grid .stat-card:nth-child(3) .stat-value{color:#8ed9bd}
+.dashboard-grid .stat-card:nth-child(4) .stat-value{color:#b7d9f2}
+#dashboard>.two-column{grid-template-columns:minmax(0,1.25fr) minmax(290px,.85fr);align-items:start;gap:18px}
+#dashboard .dashboard-panel-heading{margin:0 0 14px;padding:0 2px}
+#dashboard .dashboard-panel-heading>a,#dashboard .dashboard-inline-link{color:#a9d7f3;text-decoration:none;font-size:11px;font-weight:650;white-space:nowrap}
+#dashboard .dashboard-panel-heading>a:hover,#dashboard .dashboard-inline-link:hover{color:#e2f4ff}
+#dashboard .feed-container{gap:10px}
+#dashboard .feed-item,#dashboard .status-card{padding:17px 18px;border-radius:13px;background:linear-gradient(145deg,rgba(21,32,47,.96),rgba(14,23,35,.96));border:1px solid rgba(164,190,220,.12)!important;box-shadow:0 10px 24px rgba(0,0,0,.12)}
+#dashboard .feed-item:hover,#dashboard .status-card:hover{border-color:rgba(155,220,255,.25)!important}
+#dashboard .feed-title{color:#e7eff7;font-size:13px}
+#dashboard .feed-text{color:#9aabbd;font-size:11px;line-height:1.7}
+#dashboard .feed-meta{margin-top:12px;color:#7d91a6;font-size:10px}
+#dashboard .tactic-tag{background:rgba(155,220,255,.08);color:#a9d7f3;border:1px solid rgba(155,220,255,.1)}
+#dashboard .threat-details{margin-top:13px;padding:13px;border:1px solid rgba(164,190,220,.1);border-radius:9px;background:rgba(5,11,19,.35);color:#aab9c8;font-size:11px;line-height:1.7}
+#dashboard .status-panel{display:flex;flex-direction:column;gap:10px;min-width:0}
+#dashboard .status-panel .status-card{margin:0}
+#dashboard .status-panel .feed-header{align-items:center}
+#dashboard .status-panel .feed-title{font-size:12px}
+#dashboard .gmail-overview-card{border-color:rgba(143,198,232,.22)!important;background:linear-gradient(145deg,rgba(23,39,54,.96),rgba(14,24,37,.97))}
+.gmail-dashboard-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:17px 0 12px}
+.gmail-dashboard-metrics>div{padding:10px 8px;border:1px solid rgba(164,190,220,.1);border-radius:9px;background:rgba(5,12,20,.28)}
+.gmail-dashboard-metrics strong{display:block;color:#eaf4fc;font-size:18px;font-weight:650;font-variant-numeric:tabular-nums}
+.gmail-dashboard-metrics span{display:block;margin-top:4px;color:#8297ac;font-size:9px;text-transform:uppercase;letter-spacing:.8px}
+.gmail-last-check{margin:0 0 8px}
+#dashboard .empty-state{border:1px dashed rgba(164,190,220,.17);border-radius:12px;background:rgba(16,26,39,.45)}
+.page-intro{margin:0 0 22px}
+.page-intro h2{color:#edf3fa;font-size:23px;font-weight:650;letter-spacing:-.55px}
+.page-intro>p:last-child{max-width:680px;margin-top:8px;color:#9aabbd;font-size:12px;line-height:1.75}
+.manual-analysis-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:18px}
+#manual-analysis .form-section,#manual-analysis .analysis-result{border-radius:15px;background:linear-gradient(150deg,rgba(21,32,47,.97),rgba(13,22,34,.97));border:1px solid rgba(164,190,220,.14);box-shadow:0 15px 36px rgba(0,0,0,.16)}
+#manual-analysis .form-section{padding:26px}
+.manual-form-heading{display:flex;align-items:center;gap:13px;margin-bottom:24px}
+.manual-form-icon{display:flex;align-items:center;justify-content:center;width:38px;height:38px;flex:0 0 38px;border:1px solid rgba(155,220,255,.18);border-radius:11px;background:rgba(155,220,255,.08);color:#b8def5;font-size:22px}.manual-form-heading h3{color:#edf3fa;font-size:14px;font-weight:650}
+.manual-form-heading p{margin-top:5px;color:#8194a8;font-size:10px;line-height:1.5}
+#manual-analysis .form-group{margin-bottom:20px}
+#manual-analysis .form-label{color:#aebfd0;font-size:10px;letter-spacing:1px}
+#manual-analysis .form-input,#manual-analysis .form-textarea,#manual-analysis .form-select{background:rgba(6,13,22,.58);border:1px solid rgba(164,190,220,.17);color:#eaf1f8}
+#manual-analysis .form-textarea{min-height:230px;line-height:1.7;font-size:12px}
+.form-helper{display:block;margin-top:9px;color:#7e91a6;font-size:10px;line-height:1.6}
+.manual-submit-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:18px}
+.manual-submit-row .form-helper{max-width:250px;margin:0}
+#manual-analysis .button-primary{border-radius:9px;background:linear-gradient(135deg,#c6e3f5,#8fc7e9);color:#0b1722;box-shadow:0 8px 20px rgba(90,160,205,.13)}
+#manual-analysis .analysis-result{padding:24px}
+#manual-analysis .result-verdict{font-size:14px;line-height:1.6}
+#manual-analysis .result-label{color:#8fa3b8}
+#manual-analysis .result-value{color:#eaf2f9;font-size:13px}
+#manual-analysis .result-row{gap:14px;border-color:rgba(164,190,220,.12)}
+#email-monitor .email-monitor-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:18px;align-items:stretch}
+#email-monitor .form-section,#email-monitor .email-info-card{height:100%;padding:26px;border:1px solid rgba(164,190,220,.14);border-radius:15px;background:linear-gradient(150deg,rgba(21,32,47,.97),rgba(13,22,34,.97));box-shadow:0 15px 36px rgba(0,0,0,.15)}
+#email-monitor h3{color:#edf3fa!important;font-size:15px!important;font-weight:650}
+#email-monitor p{color:#9aabbd!important;font-size:11px!important;line-height:1.8!important}
+#email-monitor .email-info-card h3{margin-bottom:16px}
+#email-monitor .protection-list{display:grid;gap:10px;margin:15px 0}
+#email-monitor .protection-list p{margin:0;padding:10px 12px;border:1px solid rgba(164,190,220,.1);border-radius:8px;background:rgba(5,12,20,.25)}
+#email-monitor .security-divider,#email-monitor .security-divider2{height:1px;margin:17px 0;background:rgba(164,190,220,.12)}
+#email-monitor .disconnect-button{border-radius:9px;background:rgba(155,220,255,.09);border-color:rgba(155,220,255,.24);color:#b9e2fb}
+#email-monitor .disconnect-button:hover{background:rgba(155,220,255,.15);box-shadow:0 8px 20px rgba(0,0,0,.15)}
+#email-monitor .scan-feed-wrapper{margin-top:20px!important;padding:23px;border:1px solid rgba(164,190,220,.13);border-radius:15px;background:rgba(15,24,37,.92)}
+#email-monitor .feed-main-title{margin-bottom:16px;color:#eaf2f9;font-size:15px}
+#email-monitor .scan-feed-card{padding:17px;border-radius:11px;background:rgba(7,14,23,.5)}
+#email-monitor .scan-subject{color:#eaf2f9;font-size:13px}
+#email-monitor .scan-sender,#email-monitor .scan-feed-bottom{color:#8ea1b5;font-size:10px}
+#email-monitor details{color:#9eafc1;font-size:11px}
+.gmail-retained-details{margin-top:10px;padding:12px;border:1px solid rgba(164,190,220,.1);border-radius:8px;background:rgba(5,12,20,.35);color:#9fb1c3;white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px;line-height:1.7}
+.gmail-retained-tactics{margin-top:12px;color:#9fb1c3;font-size:10px}
+#threat-feed>h2{margin:0 0 18px!important;color:#edf3fa;font-size:23px!important;font-weight:650!important;letter-spacing:-.5px}
+#threat-feed .feed-container{gap:12px}
+#threat-feed .feed-item{padding:20px;border:1px solid rgba(164,190,220,.13);border-radius:13px;background:linear-gradient(145deg,rgba(21,32,47,.96),rgba(13,22,34,.96))}
+#threat-feed .feed-title{color:#eaf2f9;font-size:14px}
+#threat-feed .feed-text,#threat-feed .feed-meta{color:#91a4b8;font-size:11px;line-height:1.7}
+#threat-feed .details-btn{padding:8px 12px;border:1px solid rgba(155,220,255,.18);border-radius:8px;background:rgba(155,220,255,.06);color:#b7dff7;font-size:10px}
+#threat-feed .feed-detail-box{margin-top:13px;padding:15px;border:1px solid rgba(164,190,220,.12);border-radius:9px;background:rgba(5,12,20,.35)}
+#threat-history .history-header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:20px}
+#threat-history .history-title{margin:0;color:#edf3fa;font-size:24px;font-weight:650;letter-spacing:-.6px}
+#threat-history .history-subtitle{max-width:700px;margin-top:8px;color:#8fa2b6;font-size:11px;line-height:1.7}
+#threat-history .history-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#threat-history .history-search,#threat-history .history-filter{min-height:39px;padding:8px 11px;border:1px solid rgba(164,190,220,.16);border-radius:8px;background:#101a28;color:#dce8f3;font-size:11px}
+#threat-history .history-table-wrapper{overflow-x:auto;border:1px solid rgba(164,190,220,.13);border-radius:13px;background:rgba(14,23,35,.94)}
+#threat-history .history-table{width:100%;border-collapse:separate;border-spacing:0;min-width:820px}
+#threat-history .history-table th{padding:14px 12px;background:rgba(155,220,255,.045);color:#8ea4b9;font-size:9px;letter-spacing:.8px;text-transform:uppercase;text-align:left;white-space:nowrap}
+#threat-history .history-table td{padding:13px 12px;border-top:1px solid rgba(164,190,220,.08);color:#aebdcb;font-size:10px;vertical-align:middle}
+#threat-history .history-row{cursor:pointer;transition:background .18s ease}
+#threat-history .history-row:hover{background:rgba(155,220,255,.045)}
+#threat-history .history-message{max-width:260px;color:#c1cfdd;line-height:1.55}
+#threat-history .history-details-row{background:rgba(5,12,20,.32)}
+#threat-history .history-details{padding:16px 18px}
+#threat-history .details-section h4{margin-bottom:9px;color:#dce9f5;font-size:11px}
+#threat-history .details-section p{color:#9aabbd;font-size:11px;line-height:1.75;overflow-wrap:anywhere}
+#threat-history .detail-label{color:#8196aa;font-size:9px;letter-spacing:.8px;text-transform:uppercase}
+#threat-history .detail-value{margin-top:6px;color:#d6e3ef;font-size:11px}
+#threat-history .history-details .details-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+#threat-history .history-details .details-grid>div{padding:12px;border:1px solid rgba(164,190,220,.1);border-radius:8px;background:rgba(255,255,255,.02)}
+#threat-history .history-badge,#threat-history .history-type,#threat-history .mini-tactic{font-size:9px}
+@media(max-width:1100px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboard>.two-column{grid-template-columns:1fr}#email-monitor .email-monitor-layout{grid-template-columns:1fr}}
+@media(max-width:768px){.dashboard-intro{align-items:flex-start;flex-direction:column;padding:23px 20px;gap:20px}.dashboard-intro-actions{width:100%}.dashboard-action{flex:1}.dashboard-section-heading{align-items:flex-start}.dashboard-grid{gap:10px}.dashboard-grid .stat-card{min-height:137px;padding:16px 14px}.dashboard-grid .stat-value{font-size:25px}#threat-history .history-header{align-items:flex-start;flex-direction:column}#threat-history .history-actions{width:100%}#threat-history .history-search{flex:1;min-width:150px}#threat-history .history-actions form,#threat-history .history-actions form button{width:100%}#threat-history .history-details .details-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.manual-submit-row{align-items:stretch}.manual-submit-row .button{width:100%}}
+@media(max-width:480px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid .stat-label{font-size:9px}.dashboard-grid .stat-value{font-size:22px}.dashboard-intro-actions{flex-direction:column}.dashboard-action{width:100%}#manual-analysis .form-section,#manual-analysis .analysis-result,#email-monitor .form-section,#email-monitor .email-info-card{padding:19px}.gmail-dashboard-metrics{gap:5px}.gmail-dashboard-metrics>div{padding:8px 5px}.gmail-dashboard-metrics strong{font-size:16px}}
+
+
+.analysis-placeholder{min-height:310px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:30px;border:1px dashed rgba(164,190,220,.2);border-radius:15px;background:linear-gradient(150deg,rgba(21,32,47,.55),rgba(13,22,34,.55))}
+.analysis-placeholder-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin-bottom:20px;border:1px solid rgba(155,220,255,.2);border-radius:12px;background:rgba(155,220,255,.07);color:#b9def5;font-size:25px}
+.analysis-placeholder h3{color:#e8f0f8;font-size:15px;font-weight:650}
+.analysis-placeholder>p:last-child{max-width:390px;margin-top:9px;color:#879bad;font-size:11px;line-height:1.8}
+
+</style>
 </head>
 
 <body data-analysis-result="{% if result %}true{% else %}false{% endif %}">
+{% if show_gmail_connect_prompt %}
+<div id="gmail-connect-prompt" role="dialog" aria-modal="true" aria-labelledby="gmail-connect-prompt-title" style="position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(3, 8, 24, .82);">
+    <div style="width: 100%; max-width: 460px; padding: 28px; border: 1px solid rgba(0, 220, 220, .35); border-radius: 14px; background: #101a34; color: #edf4ff; box-shadow: 0 20px 60px rgba(0,0,0,.4);">
+        <h2 id="gmail-connect-prompt-title" style="margin: 0 0 12px; font-size: 20px;">Your account is ready</h2>
+        <p style="line-height: 1.6; color: #c0cde0;">Would you like to connect Gmail now so CyberShield AI can periodically check new incoming messages for phishing? You can also skip this and connect later from your dashboard.</p>
+        <form method="post" action="{% url 'gmail_oauth_start' %}">
+            {% csrf_token %}
+            <button type="submit" class="disconnect-button" style="width: 100%; margin: 8px 0;">Connect Gmail securely with Google</button>
+        </form>
+        <button type="button" onclick="document.getElementById('gmail-connect-prompt').remove()" style="width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,.2); border-radius: 7px; background: transparent; color: #edf4ff; cursor: pointer;">Skip for now</button>
+    </div>
+</div>
+{% endif %}
     <div class="container">
         <!-- SIDEBAR -->
         <div class="sidebar">
@@ -2251,6 +2490,21 @@ scrollbar-color: #00f0ff #101936;
 
                 <!-- DASHBOARD PAGE -->
                 <section class="page-section active" id="dashboard">
+                    <div class="dashboard-intro">
+                        <div class="dashboard-intro-copy">
+                            <p class="dashboard-eyebrow">CYBERSHIELD AI / SECURITY OVERVIEW</p>
+                            <h1 class="dashboard-heading">Your security at a glance</h1>
+                            <p class="dashboard-description">A clear view of your phishing analysis activity, connected protection, and recent threat signals.</p>
+                        </div>
+                        <div class="dashboard-intro-actions">
+                            <a href="#manual-analysis" class="dashboard-action dashboard-action-primary" onclick="showPage('manual-analysis'); return false;">Run a manual scan <span aria-hidden="true">↗</span></a>
+                            <a href="#email-monitor" class="dashboard-action" onclick="showPage('email-monitor'); return false;">Gmail monitoring</a>
+                        </div>
+                    </div>
+                    <div class="dashboard-section-heading">
+                        <div><h2>Detection summary</h2><p>Activity across your connected and manual analysis channels</p></div>
+                        <span class="dashboard-updated-label">YOUR ACCOUNT</span>
+                    </div>
                     <div class="dashboard-grid">
 
 
@@ -2313,7 +2567,10 @@ scrollbar-color: #00f0ff #101936;
                     <div class="two-column">
                         <!-- Recent Activity -->
                         <div>
-                            <h2 style="font-size: 16px; margin-bottom: 15px; font-weight: 600;">Recent Threats</h2>
+                            <div class="dashboard-panel-heading">
+                                <div><h2>Recent threat activity</h2><p>Your latest detected phishing and suspicious messages</p></div>
+                                <a href="#threat-history" onclick="showPage('threat-history'); return false;">View history <span aria-hidden="true">→</span></a>
+                            </div>
                             <div class="feed-container">
                                 {% for item in dashboard_items %}
 
@@ -2336,8 +2593,10 @@ scrollbar-color: #00f0ff #101936;
         <span class="feed-badge
             {% if item.result == 'PHISHING' %}
                 badge-phishing
-            {% else %}
+            {% elif item.result == 'SAFE' %}
                 badge-safe
+            {% else %}
+                badge-suspicious
             {% endif %}
         ">
             {{ item.result }}
@@ -2351,20 +2610,20 @@ scrollbar-color: #00f0ff #101936;
 
         <span class="tactic-tag">
 
-            {% if item.source_type|lower == "email" %}
-
+            {% if item.source_type|lower == "gmail" %}
+                📬 GMAIL
+            {% elif item.source_type|lower == "email" %}
                 📧 EMAIL
-
             {% else %}
-
                 💬 SMS/CHAT
-
             {% endif %}
 
         </span>
 
         <span>
-            Manual Scan
+            {% if item.source_type|lower == "gmail" %}Gmail Monitoring
+            {% elif item.source_type|lower == "email" %}Manual Email Scan
+            {% else %}Manual SMS/Chat Scan{% endif %}
         </span>
 
     </div>
@@ -2378,7 +2637,7 @@ scrollbar-color: #00f0ff #101936;
 <div class="threat-details">
 
     <p>
-        <strong>Full Content:</strong>
+        <strong>{% if item.source_type|lower == "gmail" %}Retained Gmail detection details:{% else %}Analyzed message content:{% endif %}</strong>
     </p>
 
     <p>
@@ -2407,11 +2666,8 @@ scrollbar-color: #00f0ff #101936;
 
     <div class="empty-icon">📭</div>
 
-    <div class="empty-title">No Threats Yet</div>
-
-    <div class="empty-text">
-        All scanned messages appear safe
-    </div>
+    <div class="empty-title">No recent threat activity</div>
+    <div class="empty-text">Detected threats will appear here when scans identify suspicious activity. Review completed analyses in Threat History.</div>
 
 </div>
 
@@ -2422,9 +2678,9 @@ scrollbar-color: #00f0ff #101936;
                         <!-- Platform Status -->
 <div class="status-panel">
 
-    <h2 style="font-size: 16px; font-weight: 600;">
-        Platform Status
-    </h2>
+    <div class="dashboard-panel-heading status-panel-heading">
+        <div><h2>Protection status</h2><p>Services and integrations linked to your account</p></div>
+    </div>
 
     <!-- Detection Engine -->
     <div class="feed-item status-card">
@@ -2435,8 +2691,8 @@ scrollbar-color: #00f0ff #101936;
                 Detection Engine
             </div>
 
-            <span class="feed-badge badge-safe">
-                ACTIVE
+            <span class="feed-badge {% if model_active %}badge-safe{% else %}badge-phishing{% endif %}">
+                {% if model_active %}ACTIVE{% else %}OFFLINE{% endif %}
             </span>
 
         </div>
@@ -2485,20 +2741,38 @@ scrollbar-color: #00f0ff #101936;
 
             {% if email_connected %}
 
-                Email monitoring integration is active.
-                Incoming emails are continuously scanned for phishing,
+                Gmail is connected. New incoming messages are checked periodically for phishing,
                 manipulation tactics, and suspicious communication patterns.
 
             {% else %}
 
                 Email monitoring is not configured yet.
-                Connect an email account to enable automated
-                phishing detection and real-time inbox scanning.
+                Connect Gmail to enable scheduled phishing checks for new incoming messages.
 
             {% endif %}
 
         </div>
 
+    </div>
+
+    <!-- Gmail monitoring snapshot -->
+    <div class="feed-item status-card gmail-overview-card">
+        <div class="feed-header">
+            <div class="feed-title">Gmail monitoring snapshot</div>
+            <span class="feed-badge {% if email_connected %}badge-safe{% else %}badge-suspicious{% endif %}">{% if email_connected %}CONNECTED{% else %}NOT CONNECTED{% endif %}</span>
+        </div>
+        {% if email_connected %}
+            <div class="gmail-dashboard-metrics">
+                <div><strong>{{ monitor_total_scanned|default:"0" }}</strong><span>Records (30d)</span></div>
+                <div><strong>{{ monitor_phishing_count|default:"0" }}</strong><span>Threats (30d)</span></div>
+                <div><strong>{{ monitor_today_scanned|default:"0" }}</strong><span>Today</span></div>
+            </div>
+            <p class="feed-text gmail-last-check">Last check: {{ last_email_scan|default:"Waiting for first check" }}</p>
+            <a href="#email-monitor" class="dashboard-inline-link" onclick="showPage('email-monitor'); return false;">Open Gmail monitor →</a>
+        {% else %}
+            <p class="feed-text">Connect a Gmail account to review new incoming messages for phishing. You control the connection and can disconnect it at any time.</p>
+            <a href="#email-monitor" class="dashboard-inline-link" onclick="showPage('email-monitor'); return false;">Set up Gmail monitoring →</a>
+        {% endif %}
     </div>
 
     <!-- Browser Extension -->
@@ -2550,7 +2824,11 @@ scrollbar-color: #00f0ff #101936;
 
     {% if item.result == "PHISHING" %}
 
-        {% if item.source_type == "email" %}
+        {% if item.source_type == "gmail" %}
+
+            Gmail Threat Detected
+
+        {% elif item.source_type == "email" %}
 
             Email Threat Detected
 
@@ -2613,14 +2891,12 @@ scrollbar-color: #00f0ff #101936;
 
                 <div>
 
-                    {% if item.source_type|lower == "email" %}
-
-                        📧 Email Message
-
+                    {% if item.source_type|lower == "gmail" %}
+                        📬 Gmail Monitoring
+                    {% elif item.source_type|lower == "email" %}
+                        📧 Manual Email Message
                     {% else %}
-
-                        💬 SMS/Chat Message
-
+                        💬 Manual SMS/Chat Message
                     {% endif %}
 
                 </div>
@@ -2798,496 +3074,123 @@ scrollbar-color: #00f0ff #101936;
 </section>
 <!-- EMAIL MONITOR PAGE -->
 <section class="page-section" id="email-monitor">
-
-    {% if not email_connected %}
-
-    <!-- EMAIL MONITOR LAYOUT -->
     <div class="email-monitor-layout">
-
-        <!-- LEFT SIDE -->
         <div class="email-left">
-
             <div class="form-section">
-    <h3 style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">
-        Live Email Connection Temporarily Unavailable
-    </h3>
-    <p style="font-size: 13px; color: var(--text-muted);">
-        Password-based inbox access has been disabled while secure OAuth
-        authentication is being developed. Do not enter your email password
-        or app token here.
-    </p>
-</div>
-
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <!-- RIGHT SIDE -->
-<div class="email-right">
-
-    <div class="email-info-card">
-
-        <!-- TOP -->
-        <h3>
-            Email Protection
-
-        </h3>
-
-        <!-- DIVIDER -->
-        <div class="security-divider2"></div>
-        <div class="protection-list">
-
-            <p>
-                ✅ Real-time inbox scanning
-            </p>
-
-            <p>
-                🧠 ML phishing detection
-            </p>
-
-            <p>
-                🔒 Secure IMAP monitoring
-            </p>
-
-            <p>
-                ⚡ Threat classification active
-            </p>
-
-            <p>
-                📨 Suspicious sender analysis
-            </p>
-
-        </div>
-
-        <!-- DIVIDER -->
-        <div class="security-divider"></div>
-        <h3>
-            Security Notice
-        </h3>
-        <div class="status-item security-text">
-
-            CyberShield AI uses secure monitoring techniques
-            for phishing analysis.
-
-            Credentials are processed securely during active
-            monitoring sessions.
-
-
-    </div>
-
-</div>
-</div>
-   {% else %}
-
-<!-- CONNECTED DASHBOARD -->
-<!-- LEFT CARD -->
- <div class="connected-dashboard">
-
-    <!-- TOP GRID -->
-    <div class="connected-top-grid">
-<div class="connected-card">
-
-    <div class="card-top-row">
-
-        <div>
-
-            <div class="threat-engine-header">
-
-                <div class="pulse-dot"></div>
-
-                <div class="connected-email-wrapper">
-                <div class="connected-email-text">
-                <h3>✉️{{ email_address|default:"No Email Connected" }}</h3></div>
-</div>
-
+                {% if email_connected %}
+                    <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">Gmail is connected</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
+                        Connected account: <strong>{{ email_address }}</strong><br>
+                        CyberShield AI checks new messages periodically. It does not scan your old inbox, and it does not read attachments.
+                    </p>
+                    <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                        While this Google app is in Testing mode, Google may expire authorization after seven days. If checks stop, reconnect Gmail here.
+                    </p>
+                    {% if gmail_connection.last_error %}
+                        <p style="font-size: 13px; color: #d97706; line-height: 1.6;">{{ gmail_connection.last_error }}</p>
+                    {% endif %}
+                    <form method="post" action="{% url 'gmail_oauth_start' %}" style="margin-bottom: 8px;">
+                        {% csrf_token %}
+                        <button type="submit" class="disconnect-button">Reconnect Gmail with Google</button>
+                    </form>
+                    <form method="post" action="{% url 'gmail_disconnect' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="disconnect-button">Disconnect Gmail</button>
+                    </form>
+                {% else %}
+                    <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">Connect Gmail for phishing protection</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
+                        Google will ask you to grant read-only access to Gmail messages. The permission is broad, but CyberShield AI is designed to process only new incoming INBOX messages received after you connect. It does not scan your older inbox or read attachments.
+                        You will never enter your Gmail password on this website.
+                    </p>
+                    <form method="post" action="{% url 'gmail_oauth_start' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="disconnect-button">Connect Gmail securely with Google</button>
+                    </form>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">
+                        You can skip this and connect later. Only messages received after connection are checked.
+                    </p>
+                {% endif %}
             </div>
-
-
         </div>
-
-        <div class="active-badge">
-            ACTIVE
-        </div>
-
-    </div>
-
-    <div class="connected-details">
-
-
-
-        <div class="detail-item">
-
-            <span>
-                Last Scan
-            </span>
-
-            <strong>
-                {{ last_email_scan|default:"Just now" }}
-            </strong>
-
-        </div>
-
-        <div class="detail-item">
-
-            <span>
-                Emails Scanned
-            </span>
-
-            <strong>
-                {{ monitor_total_scanned|default:"0" }}
-            </strong>
-
-        </div>
-
-        <div class="detail-item">
-
-            <span>
-                Provider
-            </span>
-
-            <strong class="provider-text">
-    {{ provider|default:"Secure Mail" }}
-</strong>
-
-        </div>
-
-    </div>
-
-    <div class="dashboard-divider"></div>
-
-    <div class="defense-status">
-        🛡 AI security system actively defending inbox
-    </div>
-
-    <form method="post" action="{% url 'disconnect_email' %}">
-    {% csrf_token %}
-    <button type="submit" class="disconnect-button">
-        Disconnect Email
-    </button>
-</form>
-
-</div>
-
-        <!-- RIGHT CARD -->
-        <div class="connected-card">
-
-            <div class="threat-engine-header">
-
-                <div class="pulse-dot"></div>
-
-                <h3>
-                    Threat Engine Status
-                </h3>
-
-            </div>
-
-            <div class="engine-status-list">
-
-                <div class="status-line">
-                    🛡 Monitoring Active
+        <div class="email-right">
+            <div class="email-info-card">
+                <h3>What Gmail protection does</h3>
+                <div class="security-divider2"></div>
+                <div class="protection-list">
+                    <p>✓ Checks new incoming messages on a schedule</p>
+                    <p>✓ Uses the existing CyberShield AI email detection model</p>
+                    <p>✓ Shows suspicious results on your dashboard</p>
+                    <p>✓ Sends an email alert when a threat is detected</p>
+                    <p>✓ Does not scan historical messages or attachments</p>
                 </div>
-
-                <div class="status-line">
-                    ⚡ AI Scanner Running
-                </div>
-
-                <div class="status-line">
-                    📬 Inbox Monitoring Enabled
-                </div>
-
-                <div class="status-line">
-                    🧠 ML Model Loaded
-                </div>
-
-                <div class="status-line">
-                    🔐 Secure IMAP Connection
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-</div>
-    <!-- EMAIL FEED -->
-<div
-    class="scan-feed-wrapper"
-    id="email-feed-container"
->
-
-    <div class="feed-main-title">
-        Recent Email Scans
-    </div>
-
-    {% if monitor_email_history %}
-
-        {% for email in monitor_email_history %}
-
-        <div class="scan-feed-card
-
-    {% if email.result == 'SAFE' or email.result == 'safe' %}
-        safe-card
-    {% elif email.result == 'PHISHING' or email.result == 'phishing' %}
-        phishing-card
-    {% endif %}
-
-">
-
-    <div class="scan-feed-top">
-
-        <div>
-
-            <div class="scan-subject">
-                {{ email.subject|default:"Security Alert" }}
-            </div>
-
-            <div class="scan-sender">
-                {{ email.sender|default:"Google" }}
-            </div>
-
-        </div>
-
-        <div class="feed-status-badge
-
-            {% if email.result == 'SAFE' or email.result == 'safe' %}
-                badge-safe
-            {% elif email.result == 'PHISHING' or email.result == 'phishing' %}
-                badge-phishing
-            {% else %}
-                badge-suspicious
-            {% endif %}
-
-        ">
-            {{ email.result|upper }}
-        </div>
-
-    </div>
-
-    <div class="scan-feed-bottom">
-
-        <div>
-            Confidence:
-            {{ email.safe_score|default:"91" }}%
-        </div>
-
-        <div>
-            {{ email.timestamp|default:"Just now" }}
-        </div>
-
-    </div>
-
-    <!-- EXPAND BUTTON -->
-
-    <div class="email-actions">
-
-        <button
-            class="expand-email-btn"
-            onclick="toggleEmail(this)"
-        >
-            View Details
-        </button>
-
-    </div>
-
-    <!-- EXPANDED CONTENT -->
-
-    <div class="email-expanded-content">
-
-        <div class="expanded-section">
-            <strong>Full Sender:</strong>
-            {{ email.sender }}
-        </div>
-
-        <div class="expanded-section">
-            <strong>Received:</strong>
-            {{ email.timestamp }}
-        </div>
-
-        <div class="expanded-section">
-            <strong>Email Content:</strong>
-
-            <div class="expanded-email-body">
-                {{ email.body|default:"No content available" }}
+                <div class="security-divider"></div>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.7;">
+                    <strong>Privacy and data retention:</strong> Message content is used temporarily for analysis and is not saved in Gmail detection history. We retain only the sender, subject, received date, detection result and reasons, and URL domain names. Gmail detection history is automatically deleted after 30 days. Your separate manual-analysis history is not affected.
+                </p>
+                <div class="security-divider"></div>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                    Scheduled checks can sometimes be delayed. This is periodic monitoring, not instant or guaranteed 24/7 protection.
+                </p>
             </div>
         </div>
-
     </div>
 
-</div>
-
-        {% endfor %}
-
-    {% else %}
-
-    <div class="empty-feed-state">
-
-        <div class="empty-icon">
-            📬
-        </div>
-
-        <div class="empty-feed-title">
-            No Emails Scanned Yet
-        </div>
-
-        <div class="empty-feed-text">
-            AI monitoring is active and waiting for incoming emails.
-        </div>
-
-    </div>
-</div>
-    {% endif %}
-
-</div>
-
-<!-- STATS -->
-<!-- STATS -->
-<div class="stats-grid">
-
-    <!-- EMAILS SCANNED -->
-    <div class="stats-card">
-
-        <div class="stats-top-label">
-            EMAILS SCANNED
-        </div>
-
-        <div class="stats-number">
-            {{ monitor_total_scanned|default:"0" }}
-        </div>
-
-        <div class="stats-growth safe-growth">
-            ↑ {{ monitor_today_scanned|default:"0" }} today
-        </div>
-
-        <div class="stats-badge safe-badge">
-            • Active
-        </div>
-
-    </div>
-
-    <!-- THREATS FOUND -->
-    <div class="stats-card danger-card">
-
-        <div class="stats-top-label">
-            THREATS FOUND
-        </div>
-
-        <div class="stats-number danger-number">
-            {{ monitor_phishing_count|default:"0" }}
-        </div>
-
-        <div class="stats-growth danger-growth">
-            ↑ {{ monitor_today_phishing|default:"0" }} today
-        </div>
-
-        <div class="stats-badge danger-badge">
-            • Active
-        </div>
-
-    </div>
-
-    <!-- SAFE EMAILS -->
-    <div class="stats-card">
-
-        <div class="stats-top-label">
-            SAFE EMAILS
-        </div>
-
-        <div class="stats-number">
-            {{ monitor_safe_count|default:"0" }}
-        </div>
-
-        <div class="stats-growth safe-growth">
-            ✓ {{ monitor_safe_percentage }}% clean
-        </div>
-
-        <div class="stats-badge safe-badge">
-            • Verified
-        </div>
-
-    </div>
-
-    <!-- RISK LEVEL -->
-    <div class="stats-card
-
-        {% if monitor_phishing_count > 5 %}
-            risk-high-card
-        {% elif monitor_phishing_count > 2 %}
-            risk-medium-card
+    {% if email_connected %}
+    <div class="scan-feed-wrapper" id="email-feed-container" style="margin-top: 24px;">
+        <div class="feed-main-title">Recent Gmail scans</div>
+        {% if monitor_email_history %}
+            {% for email in monitor_email_history %}
+                <div class="scan-feed-card {% if email.result == 'SAFE' %}safe-card{% else %}phishing-card{% endif %}">
+                    <div class="scan-feed-top">
+                        <div>
+                            <div class="scan-subject">{{ email.subject|default:"(No subject)" }}</div>
+                            <div class="scan-sender">{{ email.sender|default:"Unknown sender" }}</div>
+                        </div>
+                        <div class="feed-status-badge {% if email.result == 'SAFE' %}badge-safe{% else %}badge-phishing{% endif %}">
+                            {{ email.result }}
+                        </div>
+                    </div>
+                    <div class="scan-feed-bottom">
+                        <div>Safe score: {{ email.safe_score|floatformat:1 }}%</div>
+                        <div>{{ email.timestamp }}</div>
+                    </div>
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer;">View retained detection details</summary>
+                        <pre class="gmail-retained-details">{{ email.content }}</pre>
+                        {% if email.tactics %}
+                            <div class="gmail-retained-tactics"><strong>Detected tactics</strong><div class="tactics-list">
+                                {% for tactic in email.tactics %}<span class="tactic-tag">{{ tactic }}</span>{% endfor %}
+                            </div></div>
+                        {% endif %}
+                    </details>
+                </div>
+            {% endfor %}
         {% else %}
-            risk-low-card
+            <p style="font-size: 13px; color: var(--text-muted);">No new Gmail messages have been checked yet. The first scheduled check will look for messages received after you connected.</p>
         {% endif %}
-
-    ">
-
-        <div class="stats-top-label">
-            RISK LEVEL
-        </div>
-
-        <div class="stats-number
-
-            {% if monitor_phishing_count > 5 %}
-                risk-high-text
-            {% elif monitor_phishing_count > 2 %}
-                risk-medium-text
-            {% else %}
-                risk-low-text
-            {% endif %}
-
-        ">
-
-            {% if monitor_phishing_count > 5 %}
-                HIGH
-            {% elif monitor_phishing_count > 2 %}
-                MEDIUM
-            {% else %}
-                LOW
-            {% endif %}
-
-        </div>
-
-        <div class="stats-growth
-
-            {% if monitor_phishing_count > 5 %}
-                danger-growth
-            {% elif monitor_phishing_count > 2 %}
-                medium-growth
-            {% else %}
-                safe-growth
-            {% endif %}
-
-        ">
-            Live monitoring active
-        </div>
-
-        <div class="stats-badge
-
-            {% if monitor_phishing_count > 5 %}
-                danger-badge
-            {% elif monitor_phishing_count > 2 %}
-                medium-badge
-            {% else %}
-                safe-badge
-            {% endif %}
-
-        ">
-            • Protected
-        </div>
-
     </div>
-
-</div>
-{% endif %}
-
+    {% endif %}
 </section>
+
 
                 <!-- MANUAL ANALYSIS PAGE -->
 
                 <section class="page-section" id="manual-analysis">
-                    <h2 style="font-size: 16px; margin-bottom: 20px; font-weight: 600;">Manual Threat Analysis</h2>
-                    <div class="two-column">
+                    <div class="page-intro">
+                        <p class="dashboard-eyebrow">ANALYSIS WORKSPACE</p>
+                        <h2>Manual threat analysis</h2>
+                        <p>Paste a suspicious email or SMS/chat message to assess phishing signals, suspicious links, and common manipulation tactics.</p>
+                    </div>
+                    <div class="two-column manual-analysis-layout">
                     <div class="form-section">
-                        <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 600; color: var(--text-primary);">
-                            Analyze Suspicious Content
-                        </h3>
+                        <div class="manual-form-heading">
+                            <span class="manual-form-icon" aria-hidden="true">⌕</span>
+                            <div>
+                                <h3>Analyze suspicious content</h3>
+                                <p>Your submitted text is checked by the detection models.</p>
+                            </div>
+                        </div>
 
                         <form method="post">
                             {% csrf_token %}
@@ -3302,8 +3205,9 @@ scrollbar-color: #00f0ff #101936;
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Suspicious Message / Content</label>
-                                <textarea class="form-textarea" name="email_text" id="email_text" placeholder="Paste suspicious email or SMS content for ML-based phishing analysis..." required></textarea>
+                                <label class="form-label" for="email_text">Suspicious message / content</label>
+                                <textarea class="form-textarea" name="email_text" id="email_text" placeholder="Paste the email or SMS/chat text here. Include suspicious links or sender details if available..." required></textarea>
+                                <p class="form-helper">Tip: Include the full message and visible link addresses. Never paste passwords, one-time codes, or other secrets.</p>
                             </div>
 
                             <!--<div class="form-group">
@@ -3311,9 +3215,10 @@ scrollbar-color: #00f0ff #101936;
                                 <input type="text" class="form-input" name="sender" placeholder="e.g., sender@example.com">
                             </div>-->
 
-                            <button type="submit" class="button button-primary">
-                                Analyze Now
-                            </button>
+                            <div class="manual-submit-row">
+                                <span class="form-helper">Your result will also be saved in your separate Manual Analysis history.</span>
+                                <button type="submit" class="button button-primary">Analyze message <span aria-hidden="true">→</span></button>
+                            </div>
                         </form>
                     </div>
 
@@ -3461,6 +3366,13 @@ scrollbar-color: #00f0ff #101936;
                         </div>
                         {% endif %}
                     </div>
+                    {% else %}
+                    <div class="analysis-placeholder">
+                        <div class="analysis-placeholder-icon" aria-hidden="true">◎</div>
+                        <p class="dashboard-eyebrow">ANALYSIS RESULT</p>
+                        <h3>Your scan results will appear here</h3>
+                        <p>Choose a content type, paste the suspicious message, and run an analysis. The result will show the risk assessment, safety score, detected tactics, and link indicators.</p>
+                    </div>
                     {% endif %}
                     </div>
                 </section>
@@ -3471,13 +3383,9 @@ scrollbar-color: #00f0ff #101936;
     <div class="history-header">
 
         <div>
-            <h2 class="history-title">
-                Threat History
-            </h2>
-
-            <p class="history-subtitle">
-                Showing {{ history_items|length }} analyzed records
-            </p>
+            <p class="dashboard-eyebrow">YOUR PRIVATE RECORDS</p>
+            <h2 class="history-title">Threat history</h2>
+            <p class="history-subtitle">Showing {{ history_items|length }} detected threat records. Gmail monitoring records are deleted after 30 days; manual-analysis history is not affected.</p>
         </div>
 
         <div class="history-actions">
@@ -3665,7 +3573,7 @@ scrollbar-color: #00f0ff #101936;
 
                             <div class="details-section">
 
-                                <h4>Full Threat Content</h4>
+                                <h4>{% if item.source_type|lower == "gmail" %}Retained Gmail detection details{% else %}Full analyzed message{% endif %}</h4>
 
                                 <p class="searchable">
 

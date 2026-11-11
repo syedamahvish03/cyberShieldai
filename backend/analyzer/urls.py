@@ -1,9 +1,16 @@
 
 from django.urls import path
-from . import views
+from . import views, gmail_views
 
 urlpatterns = [
     path("register/", views.register, name="register"),
+    path("email/google/connect/", gmail_views.gmail_oauth_start, name="gmail_oauth_start"),
+    path("email/google/callback/", gmail_views.gmail_oauth_callback, name="gmail_oauth_callback"),
+    path("email/google/disconnect/", gmail_views.gmail_disconnect, name="gmail_disconnect"),
+    path("internal/gmail/monitor/", gmail_views.gmail_monitor_endpoint, name="gmail_monitor_endpoint"),
+    path("verify-email/<str:token>/", views.verify_email, name="verify_email"),
+    path("verification-pending/", views.registration_verification_pending, name="registration_verification_pending"),
+    path("resend-verification/", views.resend_verification_email, name="resend_verification_email"),
     path("clear-history/", views.clear_history, name="clear_history"),
     path("", views.home, name="dashboard"),
     path("connect-email/", views.connect_email, name="connect_email"),

@@ -1,8 +1,12 @@
 import json
 import hashlib
+import re
+from urllib.parse import urlsplit
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.core import mail
+from django.db import IntegrityError, transaction
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from dashboard.models import ThreatHistory, ExtensionAPIToken
@@ -16,10 +20,11 @@ class DashboardTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="cybershield_test",
+            email="cybershield_test@example.com",
             password="Test-password-123!",
         )
         self.client.login(
-            username="cybershield_test",
+            username="cybershield_test@example.com",
             password="Test-password-123!",
         )
 
@@ -28,6 +33,18 @@ class DashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "index.html")
+
+    def test_first_dashboard_visit_shows_gmail_prompt_once(self):
+        session = self.client.session
+        session["show_gmail_connect_prompt"] = True
+        session.save()
+
+        first_response = self.client.get(reverse("dashboard"))
+        self.assertContains(first_response, "Your account is ready")
+        self.assertFalse(self.client.session.get("show_gmail_connect_prompt", False))
+
+        second_response = self.client.get(reverse("dashboard"))
+        self.assertNotContains(second_response, "Your account is ready")
 
     def test_email_analysis_saves_result(self):
         response = self.client.post(
@@ -125,7 +142,7 @@ class DashboardTests(TestCase):
         response = anonymous_client.post(
             reverse("login"),
             {
-                "username": "cybershield_test",
+                "username": "cybershield_test@example.com",
                 "password": "Test-password-123!",
             },
         )
@@ -291,6 +308,54 @@ class UserHistoryIsolationTests(TestCase):
 
         self.assertIn(self.scan_b.id, visible_ids)
         self.assertNotIn(self.scan_a.id, visible_ids)
+
+    def test_dashboard_does_not_render_another_users_private_scan_content(self):
+        self.client.force_login(self.user_a)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Private test message belonging to user A")
+        self.assertNotContains(response, "Private test message belonging to user B")
+
+        self.client.force_login(self.user_b)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Private test message belonging to user B")
+        self.assertNotContains(response, "Private test message belonging to user A")
+
+    def test_all_dashboard_history_collections_are_user_scoped(self):
+        self.client.force_login(self.user_a)
+
+        response = self.client.get(reverse("dashboard"))
+
+        for collection_name in ("history_items", "feed_items", "dashboard_items"):
+            with self.subTest(collection=collection_name):
+                visible_ids = list(
+                    response.context[collection_name].values_list("id", flat=True)
+                )
+                self.assertIn(self.scan_a.id, visible_ids)
+                self.assertNotIn(self.scan_b.id, visible_ids)
+
+        self.assertEqual(response.context["email_scanned"], 1)
+        self.assertEqual(response.context["threat_count"], 1)
+
+        self.client.force_login(self.user_b)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.context["email_scanned"], 1)
+        self.assertEqual(response.context["threat_count"], 1)
+
+        for collection_name in ("history_items", "feed_items", "dashboard_items"):
+            with self.subTest(collection=collection_name):
+                visible_ids = list(
+                    response.context[collection_name].values_list("id", flat=True)
+                )
+                self.assertIn(self.scan_b.id, visible_ids)
+                self.assertNotIn(self.scan_a.id, visible_ids)
 
     def test_administrator_cannot_see_other_users_history(self):
         self.client.force_login(self.admin)
@@ -727,3 +792,346 @@ class ExtensionTokenApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class EmailAuthenticationUpgradeTests(TestCase):
+
+    def test_registration_creates_inactive_account_and_sends_verification_email(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "email": "new.person@example.com",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("registration_verification_pending"),
+        )
+        user = User.objects.get(email__iexact="new.person@example.com")
+        self.assertTrue(user.username)
+        self.assertFalse(user.has_usable_password())
+        self.assertFalse(user.is_active)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(user.email, mail.outbox[0].to)
+
+        verification_url = re.search(
+            r"https?://\S+",
+            mail.outbox[0].body,
+        ).group(0)
+        verification_path = urlsplit(verification_url).path
+        verify_response = self.client.get(verification_path)
+
+        self.assertEqual(verify_response.status_code, 200)
+        self.assertContains(verify_response, "Confirm your email")
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        activation_response = self.client.post(
+            verification_path,
+            {
+                "new_password1": "Strong-test-password-123!",
+                "new_password2": "Strong-test-password-123!",
+            },
+        )
+        self.assertEqual(activation_response.status_code, 200)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.check_password("Strong-test-password-123!"))
+        self.assertTrue(self.client.session.get("show_gmail_connect_prompt"))
+
+    def test_unverified_user_cannot_log_in(self):
+        user = User.objects.create_user(
+            username="unverified_email_user",
+            email="unverified@example.com",
+            password="Strong-test-password-123!",
+            is_active=False,
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": user.email,
+                "password": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_resend_verification_sends_email_without_disclosing_account_status(self):
+        user = User.objects.create_user(
+            username="resend_email_user",
+            email="resend@example.com",
+            password="Strong-test-password-123!",
+            is_active=False,
+        )
+
+        response = self.client.post(
+            reverse("resend_verification_email"),
+            {"email": user.email},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "If an unverified account exists")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [user.email])
+
+    def test_registration_rejects_duplicate_email_case_insensitively(self):
+        User.objects.create_user(
+            username="existing_email_user",
+            email="person@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("register"),
+            {
+                "email": "PERSON@example.com",
+                "password1": "Strong-test-password-123!",
+                "password2": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "already exists")
+        self.assertEqual(User.objects.filter(email__iexact="person@example.com").count(), 1)
+
+    def test_database_rejects_duplicate_email_case_insensitively(self):
+        User.objects.create_user(
+            username="database_email_owner",
+            email="unique.person@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                User.objects.create_user(
+                    username="database_email_duplicate",
+                    email="UNIQUE.PERSON@example.com",
+                    password="Strong-test-password-123!",
+                )
+
+        self.assertEqual(
+            User.objects.filter(email__iexact="unique.person@example.com").count(),
+            1,
+        )
+
+    def test_database_allows_multiple_blank_legacy_emails(self):
+        first = User.objects.create_user(
+            username="legacy_blank_email_one",
+            email="",
+            password="Strong-test-password-123!",
+        )
+        second = User.objects.create_user(
+            username="legacy_blank_email_two",
+            email="",
+            password="Strong-test-password-123!",
+        )
+
+        self.assertNotEqual(first.pk, second.pk)
+        self.assertEqual(User.objects.filter(email="").count(), 2)
+
+    def test_login_with_email_address(self):
+        user = User.objects.create_user(
+            username="email_login_user",
+            email="login.person@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "LOGIN.PERSON@example.com",
+                "password": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            int(self.client.session["_auth_user_id"]),
+            user.pk,
+        )
+
+    def test_username_only_login_is_rejected(self):
+        User.objects.create_user(
+            username="legacy_username_only",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "legacy_username_only",
+                "password": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_email_login_is_case_insensitive(self):
+        user = User.objects.create_user(
+            username="email_case_user",
+            email="Case.User@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "CASE.USER@EXAMPLE.COM",
+                "password": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            int(self.client.session["_auth_user_id"]),
+            user.pk,
+        )
+
+
+class GmailAPIEmailBackendTests(TestCase):
+
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="test-client-id",
+        GOOGLE_OAUTH_CLIENT_SECRET="test-client-secret",
+        GOOGLE_OAUTH_REFRESH_TOKEN="test-refresh-token",
+        GOOGLE_OAUTH_SENDER_EMAIL="sender@example.com",
+    )
+    def test_backend_refreshes_token_and_sends_message_through_gmail_api(self):
+        import base64
+        import json
+        from email import message_from_bytes
+        from unittest.mock import patch
+
+        from django.core.mail import EmailMessage
+        from analyzer.email_backend import GmailAPIEmailBackend
+
+        class FakeResponse:
+            def __init__(self, payload):
+                self.payload = json.dumps(payload).encode("utf-8")
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return self.payload
+
+        calls = []
+
+        def fake_urlopen(request, timeout):
+            calls.append(request)
+            if request.full_url == GmailAPIEmailBackend.TOKEN_URL:
+                return FakeResponse({
+                    "access_token": "temporary-access-token",
+                    "expires_in": 3600,
+                })
+            return FakeResponse({"id": "gmail-message-id"})
+
+        message = EmailMessage(
+            subject="Verify your CyberShield AI email address",
+            body="Please verify your email.",
+            from_email="ignored@example.com",
+            to=["recipient@example.com"],
+        )
+
+        with patch("analyzer.email_backend.urlopen", side_effect=fake_urlopen):
+            backend = GmailAPIEmailBackend()
+            self.assertEqual(backend.send_messages([message]), 1)
+
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0].full_url, GmailAPIEmailBackend.TOKEN_URL)
+        self.assertEqual(calls[1].full_url, GmailAPIEmailBackend.SEND_URL)
+        self.assertEqual(
+            calls[1].headers["Authorization"],
+            "Bearer temporary-access-token",
+        )
+
+        sent_payload = json.loads(calls[1].data.decode("utf-8"))
+        decoded_message = base64.urlsafe_b64decode(
+            sent_payload["raw"].encode("ascii")
+        )
+        parsed_message = message_from_bytes(decoded_message)
+        self.assertEqual(parsed_message["From"], "sender@example.com")
+        self.assertEqual(parsed_message["To"], "recipient@example.com")
+        self.assertEqual(
+            parsed_message["Subject"],
+            "Verify your CyberShield AI email address",
+        )
+
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="",
+        GOOGLE_OAUTH_CLIENT_SECRET="",
+        GOOGLE_OAUTH_REFRESH_TOKEN="",
+        GOOGLE_OAUTH_SENDER_EMAIL="",
+    )
+    def test_backend_fails_clearly_when_credentials_are_missing(self):
+        from django.core.mail import EmailMessage
+        from analyzer.email_backend import GmailAPIEmailBackend
+
+        message = EmailMessage(
+            subject="Test",
+            body="Test body",
+            to=["recipient@example.com"],
+        )
+
+        with self.assertRaisesMessage(
+            RuntimeError,
+            "Gmail API email delivery is not configured",
+        ):
+            GmailAPIEmailBackend().send_messages([message])
+
+
+class PreviewDemoUserCommandTests(TestCase):
+    def test_command_requires_explicit_preview_opt_in(self):
+        from django.core.management import call_command, CommandError
+        from unittest.mock import patch
+
+        with patch.dict("os.environ", {}, clear=True):
+            with self.assertRaises(CommandError):
+                call_command("create_preview_demo_user")
+
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_command_creates_active_preview_user_when_enabled(self):
+        from django.core.management import call_command
+        from unittest.mock import patch
+
+        env = {
+            "PREVIEW_DEMO_USER_ENABLED": "true",
+            "PREVIEW_DEMO_USER_EMAIL": "preview@example.test",
+            "PREVIEW_DEMO_USER_PASSWORD": "Long-preview-password-123!",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            call_command("create_preview_demo_user")
+
+        user = User.objects.get(email="preview@example.test")
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.check_password(env["PREVIEW_DEMO_USER_PASSWORD"]))
+
+    def test_command_does_not_overwrite_existing_active_user(self):
+        from django.core.management import call_command
+        from unittest.mock import patch
+
+        user = User.objects.create_user(
+            username="preview_existing",
+            email="preview@example.test",
+            password="Original-password-123!",
+        )
+        env = {
+            "PREVIEW_DEMO_USER_ENABLED": "true",
+            "PREVIEW_DEMO_USER_EMAIL": "preview@example.test",
+            "PREVIEW_DEMO_USER_PASSWORD": "Different-preview-password-456!",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            call_command("create_preview_demo_user")
+
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("Original-password-123!"))
+        self.assertFalse(user.check_password(env["PREVIEW_DEMO_USER_PASSWORD"]))

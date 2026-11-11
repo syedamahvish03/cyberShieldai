@@ -57,6 +57,10 @@ SECURE_HSTS_PRELOAD = (
     os.getenv("SECURE_HSTS_PRELOAD", "False").lower() == "true"
 )
 
+# Render terminates HTTPS at its edge proxy and forwards the original scheme.
+# This lets request.build_absolute_uri() create the HTTPS Google OAuth callback URL.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
@@ -163,7 +167,27 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Email-only authentication. Do not add ModelBackend here: it would allow
+# the default username-based login path as a fallback.
+AUTHENTICATION_BACKENDS = [
+    "analyzer.authentication.EmailAuthenticationBackend",
+]
+
 # Authentication redirects
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+# Outbound account-verification email delivery through Gmail API (HTTPS).
+# Credentials and the refresh token are deployment environment variables only.
+EMAIL_BACKEND = "analyzer.email_backend.GmailAPIEmailBackend"
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+GOOGLE_OAUTH_REFRESH_TOKEN = os.getenv("GOOGLE_OAUTH_REFRESH_TOKEN", "")
+GOOGLE_OAUTH_SENDER_EMAIL = os.getenv("GOOGLE_OAUTH_SENDER_EMAIL", "")
+GMAIL_TOKEN_ENCRYPTION_KEY = os.getenv("GMAIL_TOKEN_ENCRYPTION_KEY", "")
+GMAIL_MONITOR_SECRET = os.getenv("GMAIL_MONITOR_SECRET", "")
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    GOOGLE_OAUTH_SENDER_EMAIL or "no-reply@cybershieldai.com",
+)

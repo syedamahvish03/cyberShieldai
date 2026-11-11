@@ -1,0 +1,39 @@
+name: Scheduled Gmail phishing checks
+
+on:
+  schedule:
+    # Runs about every 15 minutes. GitHub may delay scheduled runs.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gmail-inbox-monitor
+  cancel-in-progress: false
+
+jobs:
+  check-gmail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check required settings
+        env:
+          MONITOR_URL: ${{ secrets.GMAIL_MONITOR_URL }}
+          MONITOR_SECRET: ${{ secrets.GMAIL_MONITOR_SECRET }}
+        run: |
+          if [ -z "$MONITOR_URL" ] || [ -z "$MONITOR_SECRET" ]; then
+            echo "GMAIL_MONITOR_URL and GMAIL_MONITOR_SECRET repository secrets must be configured."
+            exit 1
+          fi
+
+      - name: Ask CyberShield AI to check connected Gmail accounts
+        env:
+          MONITOR_URL: ${{ secrets.GMAIL_MONITOR_URL }}
+          MONITOR_SECRET: ${{ secrets.GMAIL_MONITOR_SECRET }}
+        run: |
+          curl --fail --silent --show-error \
+            --retry 2 --retry-delay 10 --max-time 180 \
+            --request POST "$MONITOR_URL" \
+            --header "Authorization: Bearer $MONITOR_SECRET"
