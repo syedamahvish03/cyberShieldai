@@ -271,7 +271,7 @@ def extract_message(message):
         # Full text is used only in memory for detection and is never saved.
         "content": combined[:MAX_EMAIL_TEXT],
         # Retain only limited metadata for the user's 30-day Gmail history.
-        "history_content": "\\n".join(history_lines)[:2000],
+        "history_content": "\n".join(history_lines)[:2000],
     }
 
 
