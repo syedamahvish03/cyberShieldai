@@ -2604,14 +2604,12 @@ input,select,textarea {
 
         <span class="tactic-tag">
 
-            {% if item.source_type|lower == "email" %}
-
+            {% if item.source_type|lower == "gmail" %}
+                📬 GMAIL
+            {% elif item.source_type|lower == "email" %}
                 📧 EMAIL
-
             {% else %}
-
                 💬 SMS/CHAT
-
             {% endif %}
 
         </span>
@@ -3180,9 +3178,13 @@ input,select,textarea {
                     </div>
                     <div class="two-column manual-analysis-layout">
                     <div class="form-section">
-                        <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 600; color: var(--text-primary);">
-                            Analyze Suspicious Content
-                        </h3>
+                        <div class="manual-form-heading">
+                            <span class="manual-form-icon" aria-hidden="true">⌕</span>
+                            <div>
+                                <h3>Analyze suspicious content</h3>
+                                <p>Your submitted text is checked by the detection models.</p>
+                            </div>
+                        </div>
 
                         <form method="post">
                             {% csrf_token %}
