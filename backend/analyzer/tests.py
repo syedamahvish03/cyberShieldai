@@ -1,7 +1,9 @@
 import json
 import hashlib
+import re
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.db import IntegrityError, transaction
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -781,7 +783,7 @@ class ExtensionTokenApiTests(TestCase):
 
 class EmailAuthenticationUpgradeTests(TestCase):
 
-    def test_registration_creates_account_with_email(self):
+    def test_registration_creates_inactive_account_and_sends_verification_email(self):
         response = self.client.post(
             reverse("register"),
             {
@@ -791,10 +793,64 @@ class EmailAuthenticationUpgradeTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("login"))
+        self.assertRedirects(
+            response,
+            reverse("registration_verification_pending"),
+        )
         user = User.objects.get(email__iexact="new.person@example.com")
         self.assertTrue(user.username)
         self.assertTrue(user.check_password("Strong-test-password-123!"))
+        self.assertFalse(user.is_active)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(user.email, mail.outbox[0].to)
+
+        verification_url = re.search(
+            r"https?://[^\\s]+",
+            mail.outbox[0].body,
+        ).group(0)
+        verification_path = "/" + verification_url.split("/", 3)[3]
+        verify_response = self.client.get(verification_path)
+
+        self.assertEqual(verify_response.status_code, 200)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+    def test_unverified_user_cannot_log_in(self):
+        user = User.objects.create_user(
+            username="unverified_email_user",
+            email="unverified@example.com",
+            password="Strong-test-password-123!",
+            is_active=False,
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": user.email,
+                "password": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_resend_verification_sends_email_without_disclosing_account_status(self):
+        user = User.objects.create_user(
+            username="resend_email_user",
+            email="resend@example.com",
+            password="Strong-test-password-123!",
+            is_active=False,
+        )
+
+        response = self.client.post(
+            reverse("resend_verification_email"),
+            {"email": user.email},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "If an unverified account exists")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [user.email])
 
     def test_registration_rejects_duplicate_email_case_insensitively(self):
         User.objects.create_user(
