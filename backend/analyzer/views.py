@@ -4,7 +4,7 @@ import secrets
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from .forms import EmailRegistrationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
@@ -32,14 +32,14 @@ def register(request):
         return redirect("dashboard")
 
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = EmailRegistrationForm(request.POST)
 
         if form.is_valid():
             form.save()
             return redirect("login")
 
     else:
-        form = UserCreationForm()
+        form = EmailRegistrationForm()
 
     return render(
         request,
