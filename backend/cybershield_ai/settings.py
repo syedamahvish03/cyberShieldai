@@ -163,7 +163,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Authentication redirects
+AUTHENTICATION_BACKENDS = [\n    "analyzer.authentication.EmailOrUsernameBackend",\n]\n\n# Authentication redirects
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
