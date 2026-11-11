@@ -2548,7 +2548,11 @@ scrollbar-color: #00f0ff #101936;
 
     {% if item.result == "PHISHING" %}
 
-        {% if item.source_type == "email" %}
+        {% if item.source_type == "gmail" %}
+
+            Gmail Threat Detected
+
+        {% elif item.source_type == "email" %}
 
             Email Threat Detected
 
