@@ -99,7 +99,10 @@ def gmail_oauth_callback(request):
         # Reuse a previously saved refresh token only if Google confirms this
         # is the same Gmail mailbox. Never attach an old mailbox token to a
         # newly selected Gmail account.
-        if not refresh_token and existing and existing.gmail_email.lower() == gmail_email.lower():
+        same_mailbox = bool(
+            existing and existing.gmail_email.lower() == gmail_email.lower()
+        )
+        if not refresh_token and same_mailbox:
             from .gmail_service import decrypt_refresh_token
             refresh_token = decrypt_refresh_token(existing.encrypted_refresh_token)
 
@@ -112,7 +115,9 @@ def gmail_oauth_callback(request):
                 "gmail_email": gmail_email,
                 "encrypted_refresh_token": encrypt_refresh_token(refresh_token),
                 # This starting point intentionally excludes all older emails.
-                "history_id": history_id,
+                # Keep the previous checkpoint when reconnecting the same mailbox,
+                # so messages received since the last successful check are not skipped.
+                "history_id": existing.history_id if same_mailbox else history_id,
                 "is_active": True,
                 "last_error": "",
             },
