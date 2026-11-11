@@ -3,6 +3,7 @@ import hashlib
 import secrets
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.core.mail import send_mail
@@ -21,6 +22,9 @@ from django.views.decorators.csrf import csrf_exempt
 from dashboard.models import ThreatHistory, ExtensionAPIToken
 
 from .services import analyze_text
+
+
+User = get_user_model()
 
 
 # Maximum JSON request size: 100 KB.
