@@ -122,7 +122,8 @@ class GmailOAuthTests(TestCase):
             history_id="200",
         )
 
-        response = self.client.post(reverse("gmail_disconnect"))
+        with patch("analyzer.gmail_views.revoke_refresh_token", return_value=True):
+            response = self.client.post(reverse("gmail_disconnect"))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(GmailConnection.objects.filter(pk=own_connection.pk).exists())
         self.assertTrue(GmailConnection.objects.filter(pk=other_connection.pk).exists())
