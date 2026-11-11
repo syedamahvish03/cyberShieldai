@@ -827,6 +827,7 @@ class EmailAuthenticationUpgradeTests(TestCase):
         user.refresh_from_db()
         self.assertTrue(user.is_active)
         self.assertTrue(user.check_password("Strong-test-password-123!"))
+        self.assertTrue(self.client.session.get("show_gmail_connect_prompt"))
 
     def test_unverified_user_cannot_log_in(self):
         user = User.objects.create_user(
