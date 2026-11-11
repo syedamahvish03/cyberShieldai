@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from dashboard.models import ThreatHistory, ExtensionAPIToken
@@ -782,6 +782,7 @@ class ExtensionTokenApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 class EmailAuthenticationUpgradeTests(TestCase):
 
     def test_registration_creates_inactive_account_and_sends_verification_email(self):
@@ -977,3 +978,98 @@ class EmailAuthenticationUpgradeTests(TestCase):
             int(self.client.session["_auth_user_id"]),
             user.pk,
         )
+
+
+class GmailAPIEmailBackendTests(TestCase):
+
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="test-client-id",
+        GOOGLE_OAUTH_CLIENT_SECRET="test-client-secret",
+        GOOGLE_OAUTH_REFRESH_TOKEN="test-refresh-token",
+        GOOGLE_OAUTH_SENDER_EMAIL="sender@example.com",
+    )
+    def test_backend_refreshes_token_and_sends_message_through_gmail_api(self):
+        import base64
+        import json
+        from email import message_from_bytes
+        from unittest.mock import patch
+
+        from django.core.mail import EmailMessage
+        from analyzer.email_backend import GmailAPIEmailBackend
+
+        class FakeResponse:
+            def __init__(self, payload):
+                self.payload = json.dumps(payload).encode("utf-8")
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return self.payload
+
+        calls = []
+
+        def fake_urlopen(request, timeout):
+            calls.append(request)
+            if request.full_url == GmailAPIEmailBackend.TOKEN_URL:
+                return FakeResponse({
+                    "access_token": "temporary-access-token",
+                    "expires_in": 3600,
+                })
+            return FakeResponse({"id": "gmail-message-id"})
+
+        message = EmailMessage(
+            subject="Verify your CyberShield AI email address",
+            body="Please verify your email.",
+            from_email="ignored@example.com",
+            to=["recipient@example.com"],
+        )
+
+        with patch("analyzer.email_backend.urlopen", side_effect=fake_urlopen):
+            backend = GmailAPIEmailBackend()
+            self.assertEqual(backend.send_messages([message]), 1)
+
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0].full_url, GmailAPIEmailBackend.TOKEN_URL)
+        self.assertEqual(calls[1].full_url, GmailAPIEmailBackend.SEND_URL)
+        self.assertEqual(
+            calls[1].headers["Authorization"],
+            "Bearer temporary-access-token",
+        )
+
+        sent_payload = json.loads(calls[1].data.decode("utf-8"))
+        decoded_message = base64.urlsafe_b64decode(
+            sent_payload["raw"].encode("ascii")
+        )
+        parsed_message = message_from_bytes(decoded_message)
+        self.assertEqual(parsed_message["From"], "sender@example.com")
+        self.assertEqual(parsed_message["To"], "recipient@example.com")
+        self.assertEqual(
+            parsed_message["Subject"],
+            "Verify your CyberShield AI email address",
+        )
+
+    @override_settings(
+        GOOGLE_OAUTH_CLIENT_ID="",
+        GOOGLE_OAUTH_CLIENT_SECRET="",
+        GOOGLE_OAUTH_REFRESH_TOKEN="",
+        GOOGLE_OAUTH_SENDER_EMAIL="",
+    )
+    def test_backend_fails_clearly_when_credentials_are_missing(self):
+        from django.core.mail import EmailMessage
+        from analyzer.email_backend import GmailAPIEmailBackend
+
+        message = EmailMessage(
+            subject="Test",
+            body="Test body",
+            to=["recipient@example.com"],
+        )
+
+        with self.assertRaisesMessage(
+            RuntimeError,
+            "Gmail API email delivery is not configured",
+        ):
+            GmailAPIEmailBackend().send_messages([message])
