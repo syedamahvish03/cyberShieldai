@@ -4,6 +4,9 @@ from . import views
 
 urlpatterns = [
     path("register/", views.register, name="register"),
+    path("verify-email/<str:token>/", views.verify_email, name="verify_email"),
+    path("verification-pending/", views.registration_verification_pending, name="registration_verification_pending"),
+    path("resend-verification/", views.resend_verification_email, name="resend_verification_email"),
     path("clear-history/", views.clear_history, name="clear_history"),
     path("", views.home, name="dashboard"),
     path("connect-email/", views.connect_email, name="connect_email"),
