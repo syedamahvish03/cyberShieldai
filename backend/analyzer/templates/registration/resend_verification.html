@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resend verification - CyberShield AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 20px; background: linear-gradient(135deg, #050812, #0f1a3d, #050812); color: #e8f0ff; font-family: "Segoe UI", Arial, sans-serif; }
+    main { width: 100%; max-width: 460px; padding: 36px; background: rgba(20, 28, 56, .94); border: 1px solid rgba(15, 255, 255, .25); border-radius: 14px; }
+    h1 { color: #00ffe0; font-size: 25px; text-align: center; }
+    p { color: #a0b4d4; line-height: 1.6; }
+    label { display: block; margin: 18px 0 8px; }
+    input { width: 100%; padding: 12px; border: 1px solid rgba(15, 255, 255, .25); border-radius: 7px; background: #0a0e27; color: white; }
+    button { width: 100%; margin-top: 22px; padding: 13px; border: 0; border-radius: 7px; background: linear-gradient(135deg, #00ffe0, #00b3ff); color: #04111f; font-weight: 700; cursor: pointer; }
+    a { color: #00ffe0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Resend verification email</h1>
+    {% if submitted %}
+      <p>If an unverified account exists for that address, a new verification email has been sent. Please check your inbox and spam folder.</p>
+      {% if delivery_error %}
+        <p>We could not deliver the email right now. Please try again later or contact the site administrator.</p>
+      {% endif %}
+    {% else %}
+      <p>Enter the email address you used to register. For privacy, we will not disclose whether an account exists.</p>
+      <form method="post">
+        {% csrf_token %}
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" autocomplete="email" required>
+        <button type="submit">Send verification email</button>
+      </form>
+    {% endif %}
+    <p><a href="{% url 'login' %}">Return to sign in</a></p>
+  </main>
+</body>
+</html>
