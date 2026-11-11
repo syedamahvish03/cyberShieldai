@@ -4,10 +4,14 @@ import secrets
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import signing
+from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired
 from django.db import IntegrityError, transaction
 from .forms import EmailRegistrationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
@@ -21,6 +25,119 @@ from .services import analyze_text
 
 # Maximum JSON request size: 100 KB.
 MAX_API_BODY_BYTES = 100_000
+
+
+# ============================================================
+# EMAIL OWNERSHIP VERIFICATION
+# ============================================================
+
+EMAIL_VERIFICATION_SALT = "analyzer.email-verification"
+EMAIL_VERIFICATION_MAX_AGE = 60 * 60 * 24
+
+
+def send_verification_email(request, user):
+    token = signing.dumps(
+        {"user_id": user.pk, "email": user.email},
+        salt=EMAIL_VERIFICATION_SALT,
+    )
+    verification_url = request.build_absolute_uri(
+        reverse("verify_email", kwargs={"token": token})
+    )
+    send_mail(
+        subject="Verify your CyberShield AI email address",
+        message=(
+            "Welcome to CyberShield AI.\n\n"
+            "Please verify that you own this email address by opening "
+            "the link below:\n\n"
+            f"{verification_url}\n\n"
+            "This link expires in 24 hours. If you did not create this "
+            "account, you can ignore this email."
+        ),
+        from_email=None,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
+
+def registration_verification_pending(request):
+    return render(request, "registration/verification_pending.html")
+
+
+def verify_email(request, token):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    try:
+        payload = signing.loads(
+            token,
+            salt=EMAIL_VERIFICATION_SALT,
+            max_age=EMAIL_VERIFICATION_MAX_AGE,
+        )
+    except SignatureExpired:
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "expired"},
+        )
+    except (BadSignature, TypeError, ValueError):
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "invalid"},
+        )
+
+    try:
+        user = User.objects.get(
+            pk=payload.get("user_id"),
+            email__iexact=payload.get("email", ""),
+        )
+    except (User.DoesNotExist, TypeError, ValueError):
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "invalid"},
+        )
+
+    if not user.is_active:
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+
+    return render(
+        request,
+        "registration/verification_result.html",
+        {"status": "verified"},
+    )
+
+
+def resend_verification_email(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    delivery_error = False
+    if request.method == "POST":
+        email = (request.POST.get("email") or "").strip()
+        if email:
+            user = User.objects.filter(
+                email__iexact=email,
+                is_active=False,
+            ).first()
+            if user:
+                try:
+                    send_verification_email(request, user)
+                except (OSError, ValueError):
+                    delivery_error = True
+
+        # Do not reveal whether an email address has an account.
+        return render(
+            request,
+            "registration/resend_verification.html",
+            {
+                "submitted": True,
+                "delivery_error": delivery_error,
+            },
+        )
+
+    return render(request, "registration/resend_verification.html")
 
 
 # ============================================================
@@ -38,7 +155,9 @@ def register(request):
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    form.save()
+                    user = form.save(commit=False)
+                    user.is_active = False
+                    user.save()
             except IntegrityError:
                 # The database constraint is the final safeguard if two
                 # registrations race after the form-level duplicate check.
@@ -47,7 +166,15 @@ def register(request):
                     "An account with this email already exists. Please log in instead.",
                 )
             else:
-                return redirect("login")
+                try:
+                    send_verification_email(request, user)
+                except (OSError, ValueError):
+                    messages.warning(
+                        request,
+                        "Your account is saved but the verification email could not be sent. "
+                        "Use the resend verification page after email delivery is configured.",
+                    )
+                return redirect("registration_verification_pending")
 
     else:
         form = EmailRegistrationForm()
