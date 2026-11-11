@@ -789,8 +789,6 @@ class EmailAuthenticationUpgradeTests(TestCase):
             reverse("register"),
             {
                 "email": "new.person@example.com",
-                "password1": "Strong-test-password-123!",
-                "password2": "Strong-test-password-123!",
             },
         )
 
@@ -800,7 +798,7 @@ class EmailAuthenticationUpgradeTests(TestCase):
         )
         user = User.objects.get(email__iexact="new.person@example.com")
         self.assertTrue(user.username)
-        self.assertTrue(user.check_password("Strong-test-password-123!"))
+        self.assertFalse(user.has_usable_password())
         self.assertFalse(user.is_active)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(user.email, mail.outbox[0].to)
@@ -817,10 +815,17 @@ class EmailAuthenticationUpgradeTests(TestCase):
         user.refresh_from_db()
         self.assertFalse(user.is_active)
 
-        activation_response = self.client.post(verification_path)
+        activation_response = self.client.post(
+            verification_path,
+            {
+                "new_password1": "Strong-test-password-123!",
+                "new_password2": "Strong-test-password-123!",
+            },
+        )
         self.assertEqual(activation_response.status_code, 200)
         user.refresh_from_db()
         self.assertTrue(user.is_active)
+        self.assertTrue(user.check_password("Strong-test-password-123!"))
 
     def test_unverified_user_cannot_log_in(self):
         user = User.objects.create_user(
