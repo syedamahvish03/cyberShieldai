@@ -1,10 +1,12 @@
 import base64
+from datetime import timedelta
 from urllib.parse import parse_qs, urlparse
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
+from django.utils import timezone
 from django.urls import reverse
 
 from analyzer.gmail_service import (
@@ -14,6 +16,7 @@ from analyzer.gmail_service import (
     scan_connection,
     extract_message,
     dashboard_gmail_data,
+    purge_expired_gmail_history,
 )
 from analyzer.models import GmailConnection
 from dashboard.models import ThreatHistory
@@ -304,6 +307,10 @@ class GmailScanningTests(TestCase):
         self.assertEqual(record.user, self.user)
         self.assertEqual(record.message_id, "scan-owner@gmail.com:gmail-message-1")
         self.assertEqual(record.result, "PHISHING")
+        self.assertIn("Security Team <alerts@example.net>", record.content)
+        self.assertIn("Urgent account verification", record.content)
+        self.assertNotIn("Your account will be suspended", record.content)
+        self.assertNotIn("verify your account immediately", record.content)
         self.connection.refresh_from_db()
         self.assertEqual(self.connection.history_id, "124")
 
@@ -403,6 +410,69 @@ class GmailScanningTests(TestCase):
         self.assertEqual(other_data["monitor_total_scanned"], 1)
         self.assertEqual(own_data["monitor_email_history"][0]["subject"], "My message")
         self.assertEqual(other_data["monitor_email_history"][0]["subject"], "Other message")
+
+    def test_gmail_history_cleanup_deletes_only_records_older_than_30_days(self):
+        old_date = timezone.now() - timedelta(days=31)
+        old_gmail = ThreatHistory.objects.create(
+            user=self.user,
+            source_type="gmail",
+            content="From: old@example.com\\nSubject: Old Gmail alert",
+            result="PHISHING",
+            phishing_probability=99,
+            tactics=["Urgency Pressure"],
+            safe_score=1,
+            message_id="old-gmail",
+        )
+        old_manual = ThreatHistory.objects.create(
+            user=self.user,
+            source_type="Manual Scan",
+            content="Old manual scan content",
+            result="SAFE",
+            phishing_probability=1,
+            tactics=[],
+            safe_score=99,
+            message_id="old-manual",
+        )
+        recent_gmail = ThreatHistory.objects.create(
+            user=self.user,
+            source_type="gmail",
+            content="From: recent@example.com\\nSubject: Recent Gmail alert",
+            result="SAFE",
+            phishing_probability=1,
+            tactics=[],
+            safe_score=99,
+            message_id="recent-gmail",
+        )
+        ThreatHistory.objects.filter(pk__in=[old_gmail.pk, old_manual.pk]).update(created_at=old_date)
+
+        deleted = purge_expired_gmail_history()
+
+        self.assertEqual(deleted, 1)
+        self.assertFalse(ThreatHistory.objects.filter(pk=old_gmail.pk).exists())
+        self.assertTrue(ThreatHistory.objects.filter(pk=old_manual.pk).exists())
+        self.assertTrue(ThreatHistory.objects.filter(pk=recent_gmail.pk).exists())
+
+    def test_gmail_monitor_runs_retention_cleanup(self):
+        old_record = ThreatHistory.objects.create(
+            user=self.user,
+            source_type="gmail",
+            content="Expired Gmail history",
+            result="SAFE",
+            phishing_probability=1,
+            tactics=[],
+            safe_score=99,
+            message_id="expired",
+        )
+        ThreatHistory.objects.filter(pk=old_record.pk).update(
+            created_at=timezone.now() - timedelta(days=31)
+        )
+        with patch("analyzer.gmail_service.GmailConnection.objects.filter") as connections:
+            connections.return_value.select_related.return_value.iterator.return_value = []
+            from analyzer.gmail_service import run_gmail_monitoring
+            summary = run_gmail_monitoring()
+
+        self.assertEqual(summary["expired_gmail_history_deleted"], 1)
+        self.assertFalse(ThreatHistory.objects.filter(pk=old_record.pk).exists())
 
     def test_duplicate_message_is_not_scanned_twice(self):
         ThreatHistory.objects.create(
