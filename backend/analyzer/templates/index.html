@@ -2095,7 +2095,102 @@ scrollbar-color: #00f0ff #101936;
     color: #00ffb3;
 }
 
-    </style>
+    
+/* ── CYBERSHIELD AI · OBSIDIAN EDITION ─────────────────────────────
+   Presentation layer only: existing page structure and behavior stay intact. */
+:root {
+  --primary:#9bdcff;
+  --primary-dark:#69bdf4;
+  --accent-red:#ff667d;
+  --accent-orange:#e9b86d;
+  --accent-green:#73d9b0;
+  --bg-dark:#0b1019;
+  --bg-darker:#070b12;
+  --card-bg:rgba(19,27,40,.88);
+  --border:rgba(164,190,220,.13);
+  --text-primary:#edf3fa;
+  --text-secondary:#aab8c9;
+  --text-muted:#748398;
+}
+html,body { background:#080d15; color:var(--text-primary); }
+body::before {
+  background:
+    radial-gradient(ellipse at 72% 0%,rgba(65,127,180,.11),transparent 42%),
+    radial-gradient(ellipse at 5% 90%,rgba(37,91,119,.08),transparent 38%),
+    linear-gradient(rgba(170,200,230,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(170,200,230,.018) 1px,transparent 1px);
+  background-size:auto,auto,48px 48px,48px 48px;
+}
+.container { background:linear-gradient(115deg,rgba(11,17,27,.98),rgba(9,14,23,.98)); }
+.sidebar {
+  width:258px; padding:25px 18px;
+  background:linear-gradient(180deg,#0d1521 0%,#0a1019 100%);
+  border-right:1px solid rgba(171,199,226,.12);
+}
+.logo { margin:0 8px 38px; gap:13px; }
+.logo-icon {
+  width:42px;height:42px;border-radius:13px;
+  background:linear-gradient(145deg,#d6e8f6,#78bde7);
+  color:#0a1724;box-shadow:0 8px 28px rgba(92,171,220,.16);
+  font-size:17px;
+}
+.logo-text { font-family:'Segoe UI',sans-serif;font-size:18px;letter-spacing:1.2px;font-weight:750; }
+.logo-ai { color:#9bdcff; }
+.nav-label { color:#64758a;letter-spacing:1.7px;font-size:10px;padding-left:11px; }
+.nav-item {
+  border-radius:10px;padding:12px 13px;margin-bottom:5px;
+  color:#9eafc3;font-size:13px;transition:background .2s,border-color .2s,transform .2s;
+}
+.nav-item:hover { background:rgba(130,184,221,.08);color:#d8ecfb;transform:translateX(2px); }
+.nav-item.active {
+  color:#c9eaff;background:linear-gradient(100deg,rgba(105,174,218,.17),rgba(105,174,218,.045));
+  border-color:rgba(143,198,232,.18);box-shadow:inset 2px 0 #8cc9ed;
+}
+.user-card { border-radius:11px;padding:12px 9px; }
+.user-avatar { background:linear-gradient(145deg,#d4e7f5,#80bfe4);color:#0a1724; }
+.header {
+  min-height:78px;padding:18px 34px;
+  background:rgba(11,17,27,.82);border-bottom:1px solid rgba(171,199,226,.11);
+  backdrop-filter:blur(18px);
+}
+.page-title { font-size:21px;letter-spacing:-.45px;font-weight:650; }
+.search-box {
+  background:rgba(20,30,43,.8);border:1px solid rgba(164,190,220,.16);
+  border-radius:10px;padding:10px 15px;color:#edf3fa;
+}
+.search-box:focus { border-color:#7bbce4;background:#111d2b; }
+.content { padding:32px 36px 44px; }
+.content::-webkit-scrollbar-thumb { background:rgba(147,185,216,.2); }
+.page-section.active { animation:luxuryReveal .32s ease both; }
+@keyframes luxuryReveal { from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none} }
+.card,.stat-card,.dashboard-card,.panel,.feed-item,.history-container,.content-card {
+  border-color:rgba(164,190,220,.13)!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.17);
+}
+button,.button { transition:transform .18s ease,box-shadow .18s ease,filter .18s ease; }
+button:hover,.button:hover { transform:translateY(-1px);filter:brightness(1.06); }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+  outline:2px solid #9bdcff;outline-offset:3px;
+}
+input,select,textarea {
+  border-radius:9px!important;
+}
+@media(max-width:900px) {
+  .sidebar { width:238px; }
+  .content { padding:25px 22px 36px; }
+  .header { padding:16px 22px; }
+}
+@media(max-width:768px) {
+  .sidebar { box-shadow:18px 0 50px rgba(0,0,0,.45); }
+  .content { padding:20px 15px 30px; }
+  .header { padding:15px 16px; }
+  .page-title { font-size:19px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important; }
+}
+
+</style>
 </head>
 
 <body data-analysis-result="{% if result %}true{% else %}false{% endif %}">
