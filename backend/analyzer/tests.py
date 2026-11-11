@@ -1,6 +1,7 @@
 import json
 import hashlib
 import re
+from urllib.parse import urlsplit
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -808,7 +809,7 @@ class EmailAuthenticationUpgradeTests(TestCase):
             r"https?://\S+",
             mail.outbox[0].body,
         ).group(0)
-        verification_path = "/" + verification_url.split("/", 3)[3]
+        verification_path = urlsplit(verification_url).path
         verify_response = self.client.get(verification_path)
 
         self.assertEqual(verify_response.status_code, 200)
