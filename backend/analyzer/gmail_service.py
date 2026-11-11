@@ -210,7 +210,7 @@ def _extract_url_domains(text):
     """Return a small, de-duplicated list of URL hosts and paths without query data."""
     found = []
     seen = set()
-    for match in re.findall(r"https?://\\S+", text or "", flags=re.IGNORECASE):
+    for match in re.findall(r"https?://\S+", text or "", flags=re.IGNORECASE):
         candidate = match.rstrip(".,;:!?)]}")
         parsed = urlsplit(candidate)
         hostname = (parsed.hostname or "").lower()
