@@ -805,7 +805,7 @@ class EmailAuthenticationUpgradeTests(TestCase):
         self.assertIn(user.email, mail.outbox[0].to)
 
         verification_url = re.search(
-            r"https?://[^\\s]+",
+            r"https?://\S+",
             mail.outbox[0].body,
         ).group(0)
         verification_path = "/" + verification_url.split("/", 3)[3]
