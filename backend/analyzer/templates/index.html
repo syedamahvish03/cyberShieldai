@@ -2839,7 +2839,7 @@ scrollbar-color: #00f0ff #101936;
                 {% else %}
                     <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">Connect Gmail for phishing protection</h3>
                     <p style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
-                        Authorize Google to let CyberShield AI read new incoming email messages so it can check for phishing and fraud.
+                        Google will ask you to grant read-only access to Gmail messages. The permission is broad, but CyberShield AI is designed to process only new incoming INBOX messages received after you connect. It does not scan your older inbox or read attachments.
                         You will never enter your Gmail password on this website.
                     </p>
                     <form method="post" action="{% url 'gmail_oauth_start' %}">
@@ -2863,6 +2863,10 @@ scrollbar-color: #00f0ff #101936;
                     <p>✓ Sends an email alert when a threat is detected</p>
                     <p>✓ Does not scan historical messages or attachments</p>
                 </div>
+                <div class="security-divider"></div>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.7;">
+                    <strong>Privacy and data retention:</strong> Message content is used temporarily for analysis and is not saved in Gmail detection history. We retain only the sender, subject, received date, detection result and reasons, and URL domain names. Gmail detection history is automatically deleted after 30 days. Your separate manual-analysis history is not affected.
+                </p>
                 <div class="security-divider"></div>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
                     Scheduled checks can sometimes be delayed. This is periodic monitoring, not instant or guaranteed 24/7 protection.
