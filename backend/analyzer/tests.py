@@ -813,6 +813,12 @@ class EmailAuthenticationUpgradeTests(TestCase):
         verify_response = self.client.get(verification_path)
 
         self.assertEqual(verify_response.status_code, 200)
+        self.assertContains(verify_response, "Confirm your email")
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        activation_response = self.client.post(verification_path)
+        self.assertEqual(activation_response.status_code, 200)
         user.refresh_from_db()
         self.assertTrue(user.is_active)
 
