@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify your email - CyberShield AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 20px; background: linear-gradient(135deg, #050812, #0f1a3d, #050812); color: #e8f0ff; font-family: "Segoe UI", Arial, sans-serif; }
+    main { width: 100%; max-width: 460px; padding: 36px; text-align: center; background: rgba(20, 28, 56, .94); border: 1px solid rgba(15, 255, 255, .25); border-radius: 14px; }
+    h1 { color: #00ffe0; font-size: 25px; }
+    p { color: #a0b4d4; line-height: 1.6; }
+    a { color: #00ffe0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Check your inbox</h1>
+    <p>Your CyberShield AI account has been created, but it is not active yet.</p>
+    <p>Open the verification email we sent and follow its link. The link expires after 24 hours.</p>
+    <p>If you do not receive the email, check your spam folder or <a href="{% url 'resend_verification_email' %}">request another verification email</a>.</p>
+    <p><a href="{% url 'login' %}">Return to sign in</a></p>
+  </main>
+</body>
+</html>
