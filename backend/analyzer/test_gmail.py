@@ -94,6 +94,44 @@ class GmailOAuthTests(TestCase):
             "private-refresh-token",
         )
 
+    def test_callback_does_not_reuse_existing_token_for_different_gmail_account(self):
+        connection = GmailConnection.objects.create(
+            user=self.user,
+            gmail_email="first-mailbox@gmail.com",
+            encrypted_refresh_token=encrypt_refresh_token("first-mailbox-token"),
+            history_id="100",
+        )
+        session = self.client.session
+        session["gmail_oauth_state"] = "expected-state"
+        session.save()
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return b'{"emailAddress":"second-mailbox@gmail.com","historyId":"200"}'
+
+        with patch(
+            "analyzer.gmail_views.exchange_authorization_code",
+            return_value={"access_token": "temporary-access-token"},
+        ), patch("analyzer.gmail_views.urlopen", return_value=FakeResponse()):
+            response = self.client.get(
+                reverse("gmail_oauth_callback"),
+                {"state": "expected-state", "code": "one-time-code"},
+            )
+
+        self.assertEqual(response.status_code, 302)
+        connection.refresh_from_db()
+        self.assertEqual(connection.gmail_email, "first-mailbox@gmail.com")
+        self.assertEqual(
+            decrypt_refresh_token(connection.encrypted_refresh_token),
+            "first-mailbox-token",
+        )
+
     def test_callback_rejects_invalid_state(self):
         session = self.client.session
         session["gmail_oauth_state"] = "correct-state"
