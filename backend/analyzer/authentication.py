@@ -5,23 +5,21 @@ from django.core.exceptions import MultipleObjectsReturned
 User = get_user_model()
 
 
-class EmailOrUsernameBackend(ModelBackend):
+class EmailAuthenticationBackend(ModelBackend):
     """
-    Authenticate by email address, while retaining username login for
-    existing accounts that have not yet added an email address.
+    Authenticate users by email address only.
+
+    The standard Django User model still stores an internal username, but
+    that username is never accepted as a login identifier.
     """
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        identifier = username or kwargs.get("email")
-        if not identifier or not password:
+        email = username or kwargs.get("email")
+        if not email or not password or "@" not in email:
             return None
 
-        user = None
         try:
-            if "@" in identifier:
-                user = User.objects.get(email__iexact=identifier)
-            else:
-                user = User.objects.get(username__iexact=identifier)
+            user = User.objects.get(email__iexact=email.strip())
         except (User.DoesNotExist, MultipleObjectsReturned):
             # Run a password hash check to reduce timing differences.
             User().set_password(password)
