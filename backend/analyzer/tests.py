@@ -727,3 +727,116 @@ class ExtensionTokenApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+
+
+class EmailAuthenticationUpgradeTests(TestCase):
+
+    def test_registration_creates_account_with_email(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "email": "new.person@example.com",
+                "password1": "Strong-test-password-123!",
+                "password2": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("login"))
+        user = User.objects.get(email__iexact="new.person@example.com")
+        self.assertTrue(user.username)
+        self.assertTrue(user.check_password("Strong-test-password-123!"))
+
+    def test_registration_rejects_duplicate_email_case_insensitively(self):
+        User.objects.create_user(
+            username="existing_email_user",
+            email="person@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("register"),
+            {
+                "email": "PERSON@example.com",
+                "password1": "Strong-test-password-123!",
+                "password2": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "already exists")
+        self.assertEqual(User.objects.filter(email__iexact="person@example.com").count(), 1)
+
+    def test_login_with_email_address(self):
+        user = User.objects.create_user(
+            username="email_login_user",
+            email="login.person@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "LOGIN.PERSON@example.com",
+                "password": "Strong-test-password-123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            int(self.client.session["_auth_user_id"]),
+            user.pk,
+        )
+
+    def test_existing_account_can_add_email_without_losing_history(self):
+        user = User.objects.create_user(
+            username="legacy_account",
+            password="Strong-test-password-123!",
+        )
+        history = ThreatHistory.objects.create(
+            user=user,
+            source_type="email",
+            content="Existing account history must remain linked.",
+            result="PHISHING",
+            phishing_probability=0.95,
+            tactics=["Urgency Pressure"],
+            safe_score=0.05,
+        )
+
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse("update_account_email"),
+            {"email": "legacy.owner@example.com"},
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        user.refresh_from_db()
+        history.refresh_from_db()
+        self.assertEqual(user.email, "legacy.owner@example.com")
+        self.assertEqual(user.pk, history.user_id)
+        self.assertTrue(ThreatHistory.objects.filter(pk=history.pk).exists())
+
+    def test_existing_account_email_update_rejects_duplicate(self):
+        user = User.objects.create_user(
+            username="legacy_account_two",
+            password="Strong-test-password-123!",
+        )
+        User.objects.create_user(
+            username="email_already_used",
+            email="taken@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse("update_account_email"),
+            {"email": "TAKEN@example.com"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        user.refresh_from_db()
+        self.assertEqual(user.email, "")
+
+    def test_email_update_requires_login(self):
+        response = self.client.get(reverse("update_account_email"))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith(reverse("login")))
