@@ -309,10 +309,11 @@ def scan_connection(connection):
         history_payload["historyId"] = page.get("historyId", history_payload.get("historyId"))
 
     for message_id in sorted(message_ids):
+        stored_message_id = f"{connection.gmail_email.lower()}:{message_id}"
         if ThreatHistory.objects.filter(
             user=connection.user,
             source_type="gmail",
-            message_id=message_id,
+            message_id=stored_message_id,
         ).exists():
             continue
 
@@ -359,7 +360,7 @@ def scan_connection(connection):
             phishing_probability=analysis["phishing_probability"],
             tactics=analysis["tactics"],
             safe_score=analysis["safe_score"],
-            message_id=message_id,
+            message_id=stored_message_id,
         )
         scanned += 1
 
