@@ -413,7 +413,7 @@ class GmailScanningTests(TestCase):
             phishing_probability=1,
             tactics=[],
             safe_score=99,
-            message_id="gmail-message-1",
+            message_id="scan-owner@gmail.com:gmail-message-1",
         )
 
         def fake_api_get(connection, path, params=None):
