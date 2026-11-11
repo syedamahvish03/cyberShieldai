@@ -15,7 +15,14 @@
 </head>
 <body>
   <main>
-    {% if status == "verified" %}
+    {% if status == "confirm" %}
+      <h1>Confirm your email</h1>
+      <p>We have confirmed that this link is valid. Press the button below to activate your CyberShield AI account.</p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" style="margin-top: 18px; padding: 12px 20px; border: 0; border-radius: 7px; background: linear-gradient(135deg, #00ffe0, #00b3ff); color: #04111f; font-weight: 700; cursor: pointer;">Verify email and activate account</button>
+      </form>
+    {% elif status == "verified" %}
       <h1>Email verified</h1>
       <p>Your email address is verified. You can now sign in to CyberShield AI.</p>
       <p><a href="{% url 'login' %}">Sign in</a></p>
