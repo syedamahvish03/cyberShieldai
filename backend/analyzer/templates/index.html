@@ -2099,6 +2099,19 @@ scrollbar-color: #00f0ff #101936;
 </head>
 
 <body data-analysis-result="{% if result %}true{% else %}false{% endif %}">
+{% if show_gmail_connect_prompt %}
+<div id="gmail-connect-prompt" role="dialog" aria-modal="true" aria-labelledby="gmail-connect-prompt-title" style="position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(3, 8, 24, .82);">
+    <div style="width: 100%; max-width: 460px; padding: 28px; border: 1px solid rgba(0, 220, 220, .35); border-radius: 14px; background: #101a34; color: #edf4ff; box-shadow: 0 20px 60px rgba(0,0,0,.4);">
+        <h2 id="gmail-connect-prompt-title" style="margin: 0 0 12px; font-size: 20px;">Your account is ready</h2>
+        <p style="line-height: 1.6; color: #c0cde0;">Would you like to connect Gmail now so CyberShield AI can periodically check new incoming messages for phishing? You can also skip this and connect later from your dashboard.</p>
+        <form method="post" action="{% url 'gmail_oauth_start' %}">
+            {% csrf_token %}
+            <button type="submit" class="disconnect-button" style="width: 100%; margin: 8px 0;">Connect Gmail securely with Google</button>
+        </form>
+        <button type="button" onclick="document.getElementById('gmail-connect-prompt').remove()" style="width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,.2); border-radius: 7px; background: transparent; color: #edf4ff; cursor: pointer;">Skip for now</button>
+    </div>
+</div>
+{% endif %}
     <div class="container">
         <!-- SIDEBAR -->
         <div class="sidebar">
