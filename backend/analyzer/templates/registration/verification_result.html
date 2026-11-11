@@ -17,10 +17,17 @@
   <main>
     {% if status == "confirm" %}
       <h1>Confirm your email</h1>
-      <p>We have confirmed that this link is valid. Press the button below to activate your CyberShield AI account.</p>
+      <p>Your email address is verified. Create your password below to activate your CyberShield AI account.</p>
       <form method="post">
         {% csrf_token %}
-        <button type="submit" style="margin-top: 18px; padding: 12px 20px; border: 0; border-radius: 7px; background: linear-gradient(135deg, #00ffe0, #00b3ff); color: #04111f; font-weight: 700; cursor: pointer;">Verify email and activate account</button>
+        {% for field in password_form %}
+          <label for="{{ field.id_for_label }}" style="display: block; margin: 16px 0 7px; text-align: left;">{{ field.label }}</label>
+          <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" id="{{ field.id_for_label }}" required style="width: 100%; padding: 12px; border: 1px solid rgba(15, 255, 255, .25); border-radius: 7px; background: #0a0e27; color: white;">
+          {% if field.help_text %}<p>{{ field.help_text|safe }}</p>{% endif %}
+          {{ field.errors }}
+        {% endfor %}
+        {{ password_form.non_field_errors }}
+        <button type="submit" style="margin-top: 18px; padding: 12px 20px; border: 0; border-radius: 7px; background: linear-gradient(135deg, #00ffe0, #00b3ff); color: #04111f; font-weight: 700; cursor: pointer;">Set password and activate account</button>
       </form>
     {% elif status == "verified" %}
       <h1>Email verified</h1>
