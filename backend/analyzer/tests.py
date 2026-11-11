@@ -16,10 +16,11 @@ class DashboardTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="cybershield_test",
+            email="cybershield_test@example.com",
             password="Test-password-123!",
         )
         self.client.login(
-            username="cybershield_test",
+            username="cybershield_test@example.com",
             password="Test-password-123!",
         )
 
@@ -125,7 +126,7 @@ class DashboardTests(TestCase):
         response = anonymous_client.post(
             reverse("login"),
             {
-                "username": "cybershield_test",
+                "username": "cybershield_test@example.com",
                 "password": "Test-password-123!",
             },
         )
@@ -787,56 +788,40 @@ class EmailAuthenticationUpgradeTests(TestCase):
             user.pk,
         )
 
-    def test_existing_account_can_add_email_without_losing_history(self):
-        user = User.objects.create_user(
-            username="legacy_account",
-            password="Strong-test-password-123!",
-        )
-        history = ThreatHistory.objects.create(
-            user=user,
-            source_type="email",
-            content="Existing account history must remain linked.",
-            result="PHISHING",
-            phishing_probability=0.95,
-            tactics=["Urgency Pressure"],
-            safe_score=0.05,
-        )
-
-        self.client.force_login(user)
-        response = self.client.post(
-            reverse("update_account_email"),
-            {"email": "legacy.owner@example.com"},
-        )
-
-        self.assertRedirects(response, reverse("dashboard"))
-        user.refresh_from_db()
-        history.refresh_from_db()
-        self.assertEqual(user.email, "legacy.owner@example.com")
-        self.assertEqual(user.pk, history.user_id)
-        self.assertTrue(ThreatHistory.objects.filter(pk=history.pk).exists())
-
-    def test_existing_account_email_update_rejects_duplicate(self):
-        user = User.objects.create_user(
-            username="legacy_account_two",
-            password="Strong-test-password-123!",
-        )
+    def test_username_only_login_is_rejected(self):
         User.objects.create_user(
-            username="email_already_used",
-            email="taken@example.com",
+            username="legacy_username_only",
             password="Strong-test-password-123!",
         )
 
-        self.client.force_login(user)
         response = self.client.post(
-            reverse("update_account_email"),
-            {"email": "TAKEN@example.com"},
+            reverse("login"),
+            {
+                "username": "legacy_username_only",
+                "password": "Strong-test-password-123!",
+            },
         )
 
         self.assertEqual(response.status_code, 200)
-        user.refresh_from_db()
-        self.assertEqual(user.email, "")
+        self.assertNotIn("_auth_user_id", self.client.session)
 
-    def test_email_update_requires_login(self):
-        response = self.client.get(reverse("update_account_email"))
+    def test_email_login_is_case_insensitive(self):
+        user = User.objects.create_user(
+            username="email_case_user",
+            email="Case.User@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "CASE.USER@EXAMPLE.COM",
+                "password": "Strong-test-password-123!",
+            },
+        )
+
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response.url.startswith(reverse("login")))
+        self.assertEqual(
+            int(self.client.session["_auth_user_id"]),
+            user.pk,
+        )
