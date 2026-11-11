@@ -1086,3 +1086,52 @@ class GmailAPIEmailBackendTests(TestCase):
             "Gmail API email delivery is not configured",
         ):
             GmailAPIEmailBackend().send_messages([message])
+
+
+class PreviewDemoUserCommandTests(TestCase):
+    def test_command_requires_explicit_preview_opt_in(self):
+        from django.core.management import call_command, CommandError
+        from unittest.mock import patch
+
+        with patch.dict("os.environ", {}, clear=True):
+            with self.assertRaises(CommandError):
+                call_command("create_preview_demo_user")
+
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_command_creates_active_preview_user_when_enabled(self):
+        from django.core.management import call_command
+        from unittest.mock import patch
+
+        env = {
+            "PREVIEW_DEMO_USER_ENABLED": "true",
+            "PREVIEW_DEMO_USER_EMAIL": "preview@example.test",
+            "PREVIEW_DEMO_USER_PASSWORD": "Long-preview-password-123!",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            call_command("create_preview_demo_user")
+
+        user = User.objects.get(email="preview@example.test")
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.check_password(env["PREVIEW_DEMO_USER_PASSWORD"]))
+
+    def test_command_does_not_overwrite_existing_active_user(self):
+        from django.core.management import call_command
+        from unittest.mock import patch
+
+        user = User.objects.create_user(
+            username="preview_existing",
+            email="preview@example.test",
+            password="Original-password-123!",
+        )
+        env = {
+            "PREVIEW_DEMO_USER_ENABLED": "true",
+            "PREVIEW_DEMO_USER_EMAIL": "preview@example.test",
+            "PREVIEW_DEMO_USER_PASSWORD": "Different-preview-password-456!",
+        }
+        with patch.dict("os.environ", env, clear=True):
+            call_command("create_preview_demo_user")
+
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("Original-password-123!"))
+        self.assertFalse(user.check_password(env["PREVIEW_DEMO_USER_PASSWORD"]))
