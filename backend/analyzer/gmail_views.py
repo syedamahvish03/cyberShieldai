@@ -38,6 +38,10 @@ def gmail_oauth_start(request):
         messages.error(request, "Secure Gmail token storage is not configured yet.")
         return redirect("/#email-monitor")
 
+    if not settings.GMAIL_MONITOR_SECRET:
+        messages.error(request, "Automatic Gmail checking is not configured yet.")
+        return redirect("/#email-monitor")
+
     state = secrets.token_urlsafe(32)
     request.session["gmail_oauth_state"] = state
     redirect_uri = request.build_absolute_uri(reverse("gmail_oauth_callback"))
