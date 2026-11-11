@@ -4,7 +4,7 @@ import secrets
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import AccountEmailForm, EmailRegistrationForm
+from .forms import EmailRegistrationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
@@ -46,25 +46,6 @@ def register(request):
         "registration/register.html",
         {"form": form},
     )
-
-
-# ============================================================
-# ADD OR UPDATE EMAIL ON AN EXISTING ACCOUNT
-# ============================================================
-
-@login_required
-def update_account_email(request):
-    if request.method == "POST":
-        form = AccountEmailForm(request.POST, user=request.user)
-        if form.is_valid():
-            request.user.email = form.cleaned_data["email"]
-            request.user.save(update_fields=["email"])
-            messages.success(request, "Your account email address has been updated.")
-            return redirect("dashboard")
-    else:
-        form = AccountEmailForm(user=request.user, initial={"email": request.user.email})
-
-    return render(request, "registration/account_email.html", {"form": form})
 
 
 # ============================================================
