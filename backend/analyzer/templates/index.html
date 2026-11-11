@@ -2798,486 +2798,89 @@ scrollbar-color: #00f0ff #101936;
 </section>
 <!-- EMAIL MONITOR PAGE -->
 <section class="page-section" id="email-monitor">
-
-    {% if not email_connected %}
-
-    <!-- EMAIL MONITOR LAYOUT -->
     <div class="email-monitor-layout">
-
-        <!-- LEFT SIDE -->
         <div class="email-left">
-
             <div class="form-section">
-    <h3 style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">
-        Live Email Connection Temporarily Unavailable
-    </h3>
-    <p style="font-size: 13px; color: var(--text-muted);">
-        Password-based inbox access has been disabled while secure OAuth
-        authentication is being developed. Do not enter your email password
-        or app token here.
-    </p>
-</div>
-
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <!-- RIGHT SIDE -->
-<div class="email-right">
-
-    <div class="email-info-card">
-
-        <!-- TOP -->
-        <h3>
-            Email Protection
-
-        </h3>
-
-        <!-- DIVIDER -->
-        <div class="security-divider2"></div>
-        <div class="protection-list">
-
-            <p>
-                ✅ Real-time inbox scanning
-            </p>
-
-            <p>
-                🧠 ML phishing detection
-            </p>
-
-            <p>
-                🔒 Secure IMAP monitoring
-            </p>
-
-            <p>
-                ⚡ Threat classification active
-            </p>
-
-            <p>
-                📨 Suspicious sender analysis
-            </p>
-
-        </div>
-
-        <!-- DIVIDER -->
-        <div class="security-divider"></div>
-        <h3>
-            Security Notice
-        </h3>
-        <div class="status-item security-text">
-
-            CyberShield AI uses secure monitoring techniques
-            for phishing analysis.
-
-            Credentials are processed securely during active
-            monitoring sessions.
-
-
-    </div>
-
-</div>
-</div>
-   {% else %}
-
-<!-- CONNECTED DASHBOARD -->
-<!-- LEFT CARD -->
- <div class="connected-dashboard">
-
-    <!-- TOP GRID -->
-    <div class="connected-top-grid">
-<div class="connected-card">
-
-    <div class="card-top-row">
-
-        <div>
-
-            <div class="threat-engine-header">
-
-                <div class="pulse-dot"></div>
-
-                <div class="connected-email-wrapper">
-                <div class="connected-email-text">
-                <h3>✉️{{ email_address|default:"No Email Connected" }}</h3></div>
-</div>
-
+                {% if email_connected %}
+                    <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">Gmail is connected</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
+                        Connected account: <strong>{{ email_address }}</strong><br>
+                        CyberShield AI checks new messages periodically. It does not scan your old inbox, and it does not read attachments.
+                    </p>
+                    {% if gmail_connection.last_error %}
+                        <p style="font-size: 13px; color: #d97706; line-height: 1.6;">{{ gmail_connection.last_error }}</p>
+                    {% endif %}
+                    <form method="post" action="{% url 'gmail_disconnect' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="disconnect-button">Disconnect Gmail</button>
+                    </form>
+                {% else %}
+                    <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">Connect Gmail for phishing protection</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
+                        Authorize Google to let CyberShield AI read new incoming email messages so it can check for phishing and fraud.
+                        You will never enter your Gmail password on this website.
+                    </p>
+                    <form method="post" action="{% url 'gmail_oauth_start' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="disconnect-button">Connect Gmail securely with Google</button>
+                    </form>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">
+                        You can skip this and connect later. Only messages received after connection are checked.
+                    </p>
+                {% endif %}
             </div>
-
-
         </div>
-
-        <div class="active-badge">
-            ACTIVE
-        </div>
-
-    </div>
-
-    <div class="connected-details">
-
-
-
-        <div class="detail-item">
-
-            <span>
-                Last Scan
-            </span>
-
-            <strong>
-                {{ last_email_scan|default:"Just now" }}
-            </strong>
-
-        </div>
-
-        <div class="detail-item">
-
-            <span>
-                Emails Scanned
-            </span>
-
-            <strong>
-                {{ monitor_total_scanned|default:"0" }}
-            </strong>
-
-        </div>
-
-        <div class="detail-item">
-
-            <span>
-                Provider
-            </span>
-
-            <strong class="provider-text">
-    {{ provider|default:"Secure Mail" }}
-</strong>
-
-        </div>
-
-    </div>
-
-    <div class="dashboard-divider"></div>
-
-    <div class="defense-status">
-        🛡 AI security system actively defending inbox
-    </div>
-
-    <form method="post" action="{% url 'disconnect_email' %}">
-    {% csrf_token %}
-    <button type="submit" class="disconnect-button">
-        Disconnect Email
-    </button>
-</form>
-
-</div>
-
-        <!-- RIGHT CARD -->
-        <div class="connected-card">
-
-            <div class="threat-engine-header">
-
-                <div class="pulse-dot"></div>
-
-                <h3>
-                    Threat Engine Status
-                </h3>
-
-            </div>
-
-            <div class="engine-status-list">
-
-                <div class="status-line">
-                    🛡 Monitoring Active
+        <div class="email-right">
+            <div class="email-info-card">
+                <h3>What Gmail protection does</h3>
+                <div class="security-divider2"></div>
+                <div class="protection-list">
+                    <p>✓ Checks new incoming messages on a schedule</p>
+                    <p>✓ Uses the existing CyberShield AI email detection model</p>
+                    <p>✓ Shows suspicious results on your dashboard</p>
+                    <p>✓ Sends an email alert when a threat is detected</p>
+                    <p>✓ Does not scan historical messages or attachments</p>
                 </div>
-
-                <div class="status-line">
-                    ⚡ AI Scanner Running
-                </div>
-
-                <div class="status-line">
-                    📬 Inbox Monitoring Enabled
-                </div>
-
-                <div class="status-line">
-                    🧠 ML Model Loaded
-                </div>
-
-                <div class="status-line">
-                    🔐 Secure IMAP Connection
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-</div>
-    <!-- EMAIL FEED -->
-<div
-    class="scan-feed-wrapper"
-    id="email-feed-container"
->
-
-    <div class="feed-main-title">
-        Recent Email Scans
-    </div>
-
-    {% if monitor_email_history %}
-
-        {% for email in monitor_email_history %}
-
-        <div class="scan-feed-card
-
-    {% if email.result == 'SAFE' or email.result == 'safe' %}
-        safe-card
-    {% elif email.result == 'PHISHING' or email.result == 'phishing' %}
-        phishing-card
-    {% endif %}
-
-">
-
-    <div class="scan-feed-top">
-
-        <div>
-
-            <div class="scan-subject">
-                {{ email.subject|default:"Security Alert" }}
-            </div>
-
-            <div class="scan-sender">
-                {{ email.sender|default:"Google" }}
-            </div>
-
-        </div>
-
-        <div class="feed-status-badge
-
-            {% if email.result == 'SAFE' or email.result == 'safe' %}
-                badge-safe
-            {% elif email.result == 'PHISHING' or email.result == 'phishing' %}
-                badge-phishing
-            {% else %}
-                badge-suspicious
-            {% endif %}
-
-        ">
-            {{ email.result|upper }}
-        </div>
-
-    </div>
-
-    <div class="scan-feed-bottom">
-
-        <div>
-            Confidence:
-            {{ email.safe_score|default:"91" }}%
-        </div>
-
-        <div>
-            {{ email.timestamp|default:"Just now" }}
-        </div>
-
-    </div>
-
-    <!-- EXPAND BUTTON -->
-
-    <div class="email-actions">
-
-        <button
-            class="expand-email-btn"
-            onclick="toggleEmail(this)"
-        >
-            View Details
-        </button>
-
-    </div>
-
-    <!-- EXPANDED CONTENT -->
-
-    <div class="email-expanded-content">
-
-        <div class="expanded-section">
-            <strong>Full Sender:</strong>
-            {{ email.sender }}
-        </div>
-
-        <div class="expanded-section">
-            <strong>Received:</strong>
-            {{ email.timestamp }}
-        </div>
-
-        <div class="expanded-section">
-            <strong>Email Content:</strong>
-
-            <div class="expanded-email-body">
-                {{ email.body|default:"No content available" }}
+                <div class="security-divider"></div>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                    Scheduled checks can sometimes be delayed. This is periodic monitoring, not instant or guaranteed 24/7 protection.
+                </p>
             </div>
         </div>
-
     </div>
 
-</div>
-
-        {% endfor %}
-
-    {% else %}
-
-    <div class="empty-feed-state">
-
-        <div class="empty-icon">
-            📬
-        </div>
-
-        <div class="empty-feed-title">
-            No Emails Scanned Yet
-        </div>
-
-        <div class="empty-feed-text">
-            AI monitoring is active and waiting for incoming emails.
-        </div>
-
-    </div>
-</div>
-    {% endif %}
-
-</div>
-
-<!-- STATS -->
-<!-- STATS -->
-<div class="stats-grid">
-
-    <!-- EMAILS SCANNED -->
-    <div class="stats-card">
-
-        <div class="stats-top-label">
-            EMAILS SCANNED
-        </div>
-
-        <div class="stats-number">
-            {{ monitor_total_scanned|default:"0" }}
-        </div>
-
-        <div class="stats-growth safe-growth">
-            ↑ {{ monitor_today_scanned|default:"0" }} today
-        </div>
-
-        <div class="stats-badge safe-badge">
-            • Active
-        </div>
-
-    </div>
-
-    <!-- THREATS FOUND -->
-    <div class="stats-card danger-card">
-
-        <div class="stats-top-label">
-            THREATS FOUND
-        </div>
-
-        <div class="stats-number danger-number">
-            {{ monitor_phishing_count|default:"0" }}
-        </div>
-
-        <div class="stats-growth danger-growth">
-            ↑ {{ monitor_today_phishing|default:"0" }} today
-        </div>
-
-        <div class="stats-badge danger-badge">
-            • Active
-        </div>
-
-    </div>
-
-    <!-- SAFE EMAILS -->
-    <div class="stats-card">
-
-        <div class="stats-top-label">
-            SAFE EMAILS
-        </div>
-
-        <div class="stats-number">
-            {{ monitor_safe_count|default:"0" }}
-        </div>
-
-        <div class="stats-growth safe-growth">
-            ✓ {{ monitor_safe_percentage }}% clean
-        </div>
-
-        <div class="stats-badge safe-badge">
-            • Verified
-        </div>
-
-    </div>
-
-    <!-- RISK LEVEL -->
-    <div class="stats-card
-
-        {% if monitor_phishing_count > 5 %}
-            risk-high-card
-        {% elif monitor_phishing_count > 2 %}
-            risk-medium-card
+    {% if email_connected %}
+    <div class="scan-feed-wrapper" id="email-feed-container" style="margin-top: 24px;">
+        <div class="feed-main-title">Recent Gmail scans</div>
+        {% if monitor_email_history %}
+            {% for email in monitor_email_history %}
+                <div class="scan-feed-card {% if email.result == 'SAFE' %}safe-card{% else %}phishing-card{% endif %}">
+                    <div class="scan-feed-top">
+                        <div>
+                            <div class="scan-subject">{{ email.subject|default:"(No subject)" }}</div>
+                            <div class="scan-sender">{{ email.sender|default:"Unknown sender" }}</div>
+                        </div>
+                        <div class="feed-status-badge {% if email.result == 'SAFE' %}badge-safe{% else %}badge-phishing{% endif %}">
+                            {{ email.result }}
+                        </div>
+                    </div>
+                    <div class="scan-feed-bottom">
+                        <div>Safe score: {{ email.safe_score|floatformat:1 }}%</div>
+                        <div>{{ email.timestamp }}</div>
+                    </div>
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer;">View scanned message text</summary>
+                        <pre style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ email.content }}</pre>
+                    </details>
+                </div>
+            {% endfor %}
         {% else %}
-            risk-low-card
+            <p style="font-size: 13px; color: var(--text-muted);">No new Gmail messages have been checked yet. The first scheduled check will look for messages received after you connected.</p>
         {% endif %}
-
-    ">
-
-        <div class="stats-top-label">
-            RISK LEVEL
-        </div>
-
-        <div class="stats-number
-
-            {% if monitor_phishing_count > 5 %}
-                risk-high-text
-            {% elif monitor_phishing_count > 2 %}
-                risk-medium-text
-            {% else %}
-                risk-low-text
-            {% endif %}
-
-        ">
-
-            {% if monitor_phishing_count > 5 %}
-                HIGH
-            {% elif monitor_phishing_count > 2 %}
-                MEDIUM
-            {% else %}
-                LOW
-            {% endif %}
-
-        </div>
-
-        <div class="stats-growth
-
-            {% if monitor_phishing_count > 5 %}
-                danger-growth
-            {% elif monitor_phishing_count > 2 %}
-                medium-growth
-            {% else %}
-                safe-growth
-            {% endif %}
-
-        ">
-            Live monitoring active
-        </div>
-
-        <div class="stats-badge
-
-            {% if monitor_phishing_count > 5 %}
-                danger-badge
-            {% elif monitor_phishing_count > 2 %}
-                medium-badge
-            {% else %}
-                safe-badge
-            {% endif %}
-
-        ">
-            • Protected
-        </div>
-
     </div>
-
-</div>
-{% endif %}
-
+    {% endif %}
 </section>
+
 
                 <!-- MANUAL ANALYSIS PAGE -->
 
