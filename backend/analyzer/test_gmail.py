@@ -297,7 +297,7 @@ class GmailScanningTests(TestCase):
         ThreatHistory.objects.create(
             user=self.user,
             source_type="gmail",
-            content="From: mine@example.com\\nSubject: My message\\n\\nMy private content",
+            content="From: mine@example.com\nSubject: My message\n\nMy private content",
             result="PHISHING",
             phishing_probability=99,
             tactics=["Urgency Pressure"],
@@ -307,7 +307,7 @@ class GmailScanningTests(TestCase):
         ThreatHistory.objects.create(
             user=other,
             source_type="gmail",
-            content="From: other@example.com\\nSubject: Other message\\n\\nOther private content",
+            content="From: other@example.com\nSubject: Other message\n\nOther private content",
             result="SAFE",
             phishing_probability=1,
             tactics=[],
