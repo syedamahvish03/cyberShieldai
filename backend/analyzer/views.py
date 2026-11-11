@@ -4,6 +4,7 @@ import secrets
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
 from .forms import EmailRegistrationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -35,8 +36,18 @@ def register(request):
         form = EmailRegistrationForm(request.POST)
 
         if form.is_valid():
-            form.save()
-            return redirect("login")
+            try:
+                with transaction.atomic():
+                    form.save()
+            except IntegrityError:
+                # The database constraint is the final safeguard if two
+                # registrations race after the form-level duplicate check.
+                form.add_error(
+                    "email",
+                    "An account with this email already exists. Please log in instead.",
+                )
+            else:
+                return redirect("login")
 
     else:
         form = EmailRegistrationForm()
