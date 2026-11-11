@@ -257,7 +257,7 @@ class GmailScanningTests(TestCase):
     def _message_payload(message_id="scan-owner@gmail.com:gmail-message-1", label_ids=None):
         body = (
             "Urgent security notice. Your account will be suspended unless "
-            "you verify your account immediately using the link provided."
+            "you verify your account immediately using https://example.org/path?tracking=123#section."
         )
         encoded = base64.urlsafe_b64encode(body.encode("utf-8")).decode("ascii").rstrip("=")
         return {
@@ -311,7 +311,9 @@ class GmailScanningTests(TestCase):
         self.assertIn("Urgent account verification", record.content)
         self.assertNotIn("Your account will be suspended", record.content)
         self.assertNotIn("verify your account immediately", record.content)
-        self.assertIn("URL destinations:", record.content) if "URL destinations:" in record.content else None
+        self.assertIn("URL destinations: example.org/path", record.content)
+        self.assertNotIn("tracking=123", record.content)
+        self.assertNotIn("#section", record.content)
         dashboard_record = dashboard_gmail_data(self.user)["monitor_email_history"][0]
         self.assertEqual(dashboard_record["sender"], "Security Team <alerts@example.net>")
         self.assertEqual(dashboard_record["subject"], "Urgent account verification")
