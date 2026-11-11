@@ -261,6 +261,7 @@ def scan_connection(connection):
     """
     scanned = 0
     threats = 0
+    connection.last_error = ""
 
     try:
         history_payload = gmail_api_get(
@@ -312,15 +313,30 @@ def scan_connection(connection):
         ).exists():
             continue
 
+        try:
+            metadata = gmail_api_get(
+                connection,
+                f"messages/{message_id}",
+                {
+                    "format": "metadata",
+                    "metadataHeaders": ["From", "Subject", "Date"],
+                },
+            )
+        except GmailAPIError as exc:
+            if exc.status_code == 404:
+                continue
+            raise
+
+        # Check the INBOX label before requesting any message body. Sent mail
+        # and other non-inbox messages are never downloaded for analysis.
+        if "INBOX" not in (metadata.get("labelIds") or []):
+            continue
+
         message = gmail_api_get(
             connection,
             f"messages/{message_id}",
             {"format": "full"},
         )
-        labels = message.get("labelIds") or []
-        if "INBOX" not in labels:
-            continue
-
         details = extract_message(message)
         content = details["content"]
         if len(content.strip()) < 15:
@@ -360,8 +376,6 @@ def scan_connection(connection):
     if new_history_id:
         connection.history_id = str(new_history_id)
     connection.last_checked_at = timezone.now()
-    if not connection.last_error:
-        connection.last_error = ""
     connection.save(update_fields=["history_id", "last_checked_at", "last_error"])
     return {"scanned": scanned, "threats": threats, "reset": False}
 
