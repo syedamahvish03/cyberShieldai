@@ -45,13 +45,17 @@ class GmailOAuthTests(TestCase):
         self.assertEqual(decrypt_refresh_token(encrypted), token)
 
     def test_oauth_start_requests_readonly_scope_and_uses_state(self):
-        response = self.client.post(reverse("gmail_oauth_start"))
+        response = self.client.post(
+            reverse("gmail_oauth_start"),
+            HTTP_X_FORWARDED_PROTO="https",
+        )
         self.assertEqual(response.status_code, 302)
         parsed = urlparse(response.url)
         params = parse_qs(parsed.query)
         self.assertEqual(params["scope"], ["https://www.googleapis.com/auth/gmail.readonly"])
         self.assertEqual(params["access_type"], ["offline"])
         self.assertEqual(params["prompt"], ["consent"])
+        self.assertTrue(params["redirect_uri"][0].startswith("https://"))
         self.assertEqual(
             self.client.session["gmail_oauth_state"],
             params["state"][0],
