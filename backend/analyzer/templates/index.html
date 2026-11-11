@@ -2315,6 +2315,12 @@ input,select,textarea {
 @media(max-width:768px){.dashboard-intro{align-items:flex-start;flex-direction:column;padding:23px 20px;gap:20px}.dashboard-intro-actions{width:100%}.dashboard-action{flex:1}.dashboard-section-heading{align-items:flex-start}.dashboard-grid{gap:10px}.dashboard-grid .stat-card{min-height:137px;padding:16px 14px}.dashboard-grid .stat-value{font-size:25px}#threat-history .history-header{align-items:flex-start;flex-direction:column}#threat-history .history-actions{width:100%}#threat-history .history-search{flex:1;min-width:150px}#threat-history .history-actions form,#threat-history .history-actions form button{width:100%}#threat-history .history-details .details-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.manual-submit-row{align-items:stretch}.manual-submit-row .button{width:100%}}
 @media(max-width:480px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid .stat-label{font-size:9px}.dashboard-grid .stat-value{font-size:22px}.dashboard-intro-actions{flex-direction:column}.dashboard-action{width:100%}#manual-analysis .form-section,#manual-analysis .analysis-result,#email-monitor .form-section,#email-monitor .email-info-card{padding:19px}.gmail-dashboard-metrics{gap:5px}.gmail-dashboard-metrics>div{padding:8px 5px}.gmail-dashboard-metrics strong{font-size:16px}}
 
+
+.analysis-placeholder{min-height:310px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:30px;border:1px dashed rgba(164,190,220,.2);border-radius:15px;background:linear-gradient(150deg,rgba(21,32,47,.55),rgba(13,22,34,.55))}
+.analysis-placeholder-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin-bottom:20px;border:1px solid rgba(155,220,255,.2);border-radius:12px;background:rgba(155,220,255,.07);color:#b9def5;font-size:25px}
+.analysis-placeholder h3{color:#e8f0f8;font-size:15px;font-weight:650}
+.analysis-placeholder>p:last-child{max-width:390px;margin-top:9px;color:#879bad;font-size:11px;line-height:1.8}
+
 </style>
 </head>
 
@@ -3360,6 +3366,13 @@ input,select,textarea {
                         </div>
                         {% endif %}
                     </div>
+                    {% else %}
+                    <div class="analysis-placeholder">
+                        <div class="analysis-placeholder-icon" aria-hidden="true">◎</div>
+                        <p class="dashboard-eyebrow">ANALYSIS RESULT</p>
+                        <h3>Your scan results will appear here</h3>
+                        <p>Choose a content type, paste the suspicious message, and run an analysis. The result will show the risk assessment, safety score, detected tactics, and link indicators.</p>
+                    </div>
                     {% endif %}
                     </div>
                 </section>
@@ -3372,7 +3385,7 @@ input,select,textarea {
         <div>
             <p class="dashboard-eyebrow">YOUR PRIVATE RECORDS</p>
             <h2 class="history-title">Threat history</h2>
-            <p class="history-subtitle">Showing {{ history_items|length }} detected threat records. Manual analysis history remains separate from Gmail's automatic 30-day retention.</p>
+            <p class="history-subtitle">Showing {{ history_items|length }} detected threat records. Gmail records expire after 30 days; manual-analysis records follow their separate retention policy.</p>
         </div>
 
         <div class="history-actions">
