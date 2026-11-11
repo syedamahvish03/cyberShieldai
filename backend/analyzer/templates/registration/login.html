@@ -117,12 +117,13 @@
       <form method="post">
         {% csrf_token %}
 
-        <label for="id_username">Username</label>
+        <label for="id_username">Email address or existing username</label>
         <input
           type="text"
           name="username"
           id="id_username"
           autocomplete="username"
+          placeholder="you@example.com"
           required
           autofocus
         />
@@ -138,7 +139,7 @@
 
         {% if form.errors %}
         <p class="error">
-          Username or password is incorrect. Please try again.
+          Email/username or password is incorrect. Please try again.
         </p>
         {% endif %} {% if next %}
         <input type="hidden" name="next" value="{{ next }}" />
