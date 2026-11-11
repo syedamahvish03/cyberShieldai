@@ -2250,7 +2250,7 @@ input,select,textarea {
 #manual-analysis .form-section,#manual-analysis .analysis-result{border-radius:15px;background:linear-gradient(150deg,rgba(21,32,47,.97),rgba(13,22,34,.97));border:1px solid rgba(164,190,220,.14);box-shadow:0 15px 36px rgba(0,0,0,.16)}
 #manual-analysis .form-section{padding:26px}
 .manual-form-heading{display:flex;align-items:center;gap:13px;margin-bottom:24px}
-.manual-form-heading h3{color:#edf3fa;font-size:14px;font-weight:650}
+.manual-form-icon{display:flex;align-items:center;justify-content:center;width:38px;height:38px;flex:0 0 38px;border:1px solid rgba(155,220,255,.18);border-radius:11px;background:rgba(155,220,255,.08);color:#b8def5;font-size:22px}.manual-form-heading h3{color:#edf3fa;font-size:14px;font-weight:650}
 .manual-form-heading p{margin-top:5px;color:#8194a8;font-size:10px;line-height:1.5}
 #manual-analysis .form-group{margin-bottom:20px}
 #manual-analysis .form-label{color:#aebfd0;font-size:10px;letter-spacing:1px}
@@ -2763,8 +2763,8 @@ input,select,textarea {
         </div>
         {% if email_connected %}
             <div class="gmail-dashboard-metrics">
-                <div><strong>{{ monitor_total_scanned|default:"0" }}</strong><span>Checked</span></div>
-                <div><strong>{{ monitor_phishing_count|default:"0" }}</strong><span>Threats</span></div>
+                <div><strong>{{ monitor_total_scanned|default:"0" }}</strong><span>Records (30d)</span></div>
+                <div><strong>{{ monitor_phishing_count|default:"0" }}</strong><span>Threats (30d)</span></div>
                 <div><strong>{{ monitor_today_scanned|default:"0" }}</strong><span>Today</span></div>
             </div>
             <p class="feed-text gmail-last-check">Last check: {{ last_email_scan|default:"Waiting for first check" }}</p>
@@ -3385,7 +3385,7 @@ input,select,textarea {
         <div>
             <p class="dashboard-eyebrow">YOUR PRIVATE RECORDS</p>
             <h2 class="history-title">Threat history</h2>
-            <p class="history-subtitle">Showing {{ history_items|length }} detected threat records. Gmail records expire after 30 days; manual-analysis records follow their separate retention policy.</p>
+            <p class="history-subtitle">Showing {{ history_items|length }} detected threat records. Gmail monitoring records are deleted after 30 days; manual-analysis history is not affected.</p>
         </div>
 
         <div class="history-actions">
