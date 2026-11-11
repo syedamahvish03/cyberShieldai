@@ -195,6 +195,8 @@ class GmailScanningTests(TestCase):
                     }],
                 }
             if path == "messages/gmail-message-1":
+                if params and params.get("format") == "metadata":
+                    return {"labelIds": ["INBOX"]}
                 return self._message_payload()
             raise AssertionError(f"Unexpected Gmail API path: {path}")
 
@@ -229,10 +231,7 @@ class GmailScanningTests(TestCase):
                     }],
                 }
             if path == "messages/sent-message":
-                return self._message_payload(
-                    message_id="sent-message",
-                    label_ids=["SENT"],
-                )
+                return {"labelIds": ["SENT"]}
             raise AssertionError(f"Unexpected Gmail API path: {path}")
 
         with patch("analyzer.gmail_service.gmail_api_get", side_effect=fake_api_get), patch(
