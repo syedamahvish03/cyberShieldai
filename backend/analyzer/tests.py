@@ -34,6 +34,18 @@ class DashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "index.html")
 
+    def test_first_dashboard_visit_shows_gmail_prompt_once(self):
+        session = self.client.session
+        session["show_gmail_connect_prompt"] = True
+        session.save()
+
+        first_response = self.client.get(reverse("dashboard"))
+        self.assertContains(first_response, "Your account is ready")
+        self.assertFalse(self.client.session.get("show_gmail_connect_prompt", False))
+
+        second_response = self.client.get(reverse("dashboard"))
+        self.assertNotContains(second_response, "Your account is ready")
+
     def test_email_analysis_saves_result(self):
         response = self.client.post(
             reverse("dashboard"),
