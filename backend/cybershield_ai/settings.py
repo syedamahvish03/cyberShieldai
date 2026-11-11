@@ -174,15 +174,14 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Outbound email delivery for account verification.
-# Configure these values as environment variables in the deployment platform.
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST", "")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+# Outbound account-verification email delivery through Gmail API (HTTPS).
+# Credentials and the refresh token are deployment environment variables only.
+EMAIL_BACKEND = "analyzer.email_backend.GmailAPIEmailBackend"
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+GOOGLE_OAUTH_REFRESH_TOKEN = os.getenv("GOOGLE_OAUTH_REFRESH_TOKEN", "")
+GOOGLE_OAUTH_SENDER_EMAIL = os.getenv("GOOGLE_OAUTH_SENDER_EMAIL", "")
 DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
-    EMAIL_HOST_USER or "no-reply@cybershieldai.com",
+    GOOGLE_OAUTH_SENDER_EMAIL or "no-reply@cybershieldai.com",
 )
