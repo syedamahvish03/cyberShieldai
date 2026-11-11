@@ -108,6 +108,9 @@ def revoke_refresh_token(token):
 
 
 def _access_token(connection):
+    cached = getattr(connection, "_gmail_access_token", None)
+    if cached:
+        return cached
     refresh_token = decrypt_refresh_token(connection.encrypted_refresh_token)
     body = urlencode({
         "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
@@ -125,6 +128,9 @@ def _access_token(connection):
     token = payload.get("access_token")
     if not token:
         raise GmailAPIError("Google did not return an access token.")
+    # One monitor run lasts only a few minutes, well inside Google's usual
+    # access-token lifetime. Keep this token only on the in-memory model object.
+    connection._gmail_access_token = token
     return token
 
 
@@ -332,11 +338,16 @@ def scan_connection(connection):
         if "INBOX" not in (metadata.get("labelIds") or []):
             continue
 
-        message = gmail_api_get(
-            connection,
-            f"messages/{message_id}",
-            {"format": "full"},
-        )
+        try:
+            message = gmail_api_get(
+                connection,
+                f"messages/{message_id}",
+                {"format": "full"},
+            )
+        except GmailAPIError as exc:
+            if exc.status_code == 404:
+                continue
+            raise
         details = extract_message(message)
         content = details["content"]
         if len(content.strip()) < 15:
