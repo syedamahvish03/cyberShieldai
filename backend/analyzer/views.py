@@ -4,6 +4,7 @@ import secrets
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.core.mail import send_mail
@@ -103,20 +104,34 @@ def verify_email(request, token):
         )
 
     if user.is_active:
-        status = "verified"
-    elif request.method == "POST":
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "verified"},
+        )
+
+    password_form = SetPasswordForm(
+        user,
+        request.POST or None,
+    )
+    if request.method == "POST" and password_form.is_valid():
+        password_form.save()
         user.is_active = True
         user.save(update_fields=["is_active"])
-        status = "verified"
-    else:
-        # Require an explicit confirmation POST. This avoids email security
-        # scanners activating accounts merely by prefetching the link.
-        status = "confirm"
+        return render(
+            request,
+            "registration/verification_result.html",
+            {"status": "verified"},
+        )
 
+    # The account has no usable password until the email owner sets one here.
     return render(
         request,
         "registration/verification_result.html",
-        {"status": status, "token": token},
+        {
+            "status": "confirm",
+            "password_form": password_form,
+        },
     )
 
 
@@ -166,9 +181,7 @@ def register(request):
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    user = form.save(commit=False)
-                    user.is_active = False
-                    user.save()
+                    user = form.save()
             except IntegrityError:
                 # The database constraint is the final safeguard if two
                 # registrations race after the form-level duplicate check.
