@@ -251,7 +251,7 @@ class GmailScanningTests(TestCase):
         )
 
     @staticmethod
-    def _message_payload(message_id="gmail-message-1", label_ids=None):
+    def _message_payload(message_id="scan-owner@gmail.com:gmail-message-1", label_ids=None):
         body = (
             "Urgent security notice. Your account will be suspended unless "
             "you verify your account immediately using the link provided."
@@ -302,7 +302,7 @@ class GmailScanningTests(TestCase):
         self.assertEqual(result["threats"], 1)
         record = ThreatHistory.objects.get(source_type="gmail")
         self.assertEqual(record.user, self.user)
-        self.assertEqual(record.message_id, "gmail-message-1")
+        self.assertEqual(record.message_id, "scan-owner@gmail.com:gmail-message-1")
         self.assertEqual(record.result, "PHISHING")
         self.connection.refresh_from_db()
         self.assertEqual(self.connection.history_id, "124")
