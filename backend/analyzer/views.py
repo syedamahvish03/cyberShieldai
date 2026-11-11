@@ -102,14 +102,21 @@ def verify_email(request, token):
             {"status": "invalid"},
         )
 
-    if not user.is_active:
+    if user.is_active:
+        status = "verified"
+    elif request.method == "POST":
         user.is_active = True
         user.save(update_fields=["is_active"])
+        status = "verified"
+    else:
+        # Require an explicit confirmation POST. This avoids email security
+        # scanners activating accounts merely by prefetching the link.
+        status = "confirm"
 
     return render(
         request,
         "registration/verification_result.html",
-        {"status": "verified"},
+        {"status": status, "token": token},
     )
 
 
