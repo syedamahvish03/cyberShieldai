@@ -163,7 +163,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-AUTHENTICATION_BACKENDS = [\n    "analyzer.authentication.EmailOrUsernameBackend",\n]\n\n# Authentication redirects
+AUTHENTICATION_BACKENDS = [
+    "analyzer.authentication.EmailOrUsernameBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# Authentication redirects
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
