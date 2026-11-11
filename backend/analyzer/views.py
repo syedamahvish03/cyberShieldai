@@ -150,7 +150,7 @@ def resend_verification_email(request):
             if user:
                 try:
                     send_verification_email(request, user)
-                except (OSError, ValueError):
+                except (OSError, RuntimeError, ValueError):
                     delivery_error = True
 
         # Do not reveal whether an email address has an account.
@@ -192,7 +192,7 @@ def register(request):
             else:
                 try:
                     send_verification_email(request, user)
-                except (OSError, ValueError):
+                except (OSError, RuntimeError, ValueError):
                     messages.warning(
                         request,
                         "Your account is saved but the verification email could not be sent. "
