@@ -32,7 +32,8 @@
     {% elif status == "verified" %}
       <h1>Email verified</h1>
       <p>Your email address is verified. You can now sign in to CyberShield AI.</p>
-      <p><a href="{% url 'login' %}">Sign in</a></p>
+      <p>After signing in, you can connect Gmail from the Email Monitor section, or skip it and connect later from your dashboard.</p>
+      <p><a href="{% url 'login' %}">Sign in and continue</a></p>
     {% elif status == "expired" %}
       <h1>Verification link expired</h1>
       <p>For your security, verification links expire after 24 hours.</p>
