@@ -161,6 +161,14 @@ class _HTMLTextExtractor:
             def handle_data(self, data):
                 self.parts.append(data)
 
+            def handle_starttag(self, tag, attrs):
+                # Include actual link destinations in temporary analysis text.
+                # Visible anchor text alone can hide a different destination.
+                if tag.lower() in ("a", "area"):
+                    href = dict(attrs).get("href", "").strip()
+                    if href:
+                        self.parts.append(href)
+
         self.parser = Parser()
 
     def extract(self, source):
@@ -218,9 +226,8 @@ def _extract_url_domains(text):
             continue
         # Keep enough context to identify the destination, but discard query
         # strings and fragments that may contain personal or tracking tokens.
+        # Retain only the domain; paths can themselves contain private tokens.
         destination = hostname
-        if parsed.path and parsed.path != "/":
-            destination += parsed.path[:120]
         if destination not in seen:
             seen.add(destination)
             found.append(destination)
