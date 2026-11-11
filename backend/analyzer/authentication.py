@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 from django.core.exceptions import MultipleObjectsReturned
 
 User = get_user_model()
 
 
-class EmailOrUsernameBackend:
+class EmailOrUsernameBackend(ModelBackend):
     """
     Authenticate by email address, while retaining username login for
     existing accounts that have not yet added an email address.
