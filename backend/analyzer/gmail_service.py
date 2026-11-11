@@ -215,7 +215,7 @@ def _header(headers, name):
 
 
 def _extract_url_domains(text):
-    """Return a small, de-duplicated list of URL hosts and paths without query data."""
+    """Return up to five de-duplicated URL hostnames without paths or tokens."""
     found = []
     seen = set()
     for match in re.findall(r"https?://\S+", text or "", flags=re.IGNORECASE):
