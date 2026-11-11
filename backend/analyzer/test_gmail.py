@@ -12,6 +12,8 @@ from analyzer.gmail_service import (
     encrypt_refresh_token,
     decrypt_refresh_token,
     scan_connection,
+    extract_message,
+    dashboard_gmail_data,
 )
 from analyzer.models import GmailConnection
 from dashboard.models import ThreatHistory
@@ -259,6 +261,65 @@ class GmailScanningTests(TestCase):
         self.connection.refresh_from_db()
         self.assertEqual(self.connection.history_id, "999")
         self.assertFalse(ThreatHistory.objects.filter(source_type="gmail").exists())
+
+
+    def test_attachment_parts_are_not_included_in_scanned_text(self):
+        message = {
+            "payload": {
+                "mimeType": "multipart/mixed",
+                "headers": [
+                    {"name": "From", "value": "sender@example.com"},
+                    {"name": "Subject", "value": "Message with attachment"},
+                ],
+                "parts": [
+                    {
+                        "mimeType": "text/plain",
+                        "body": {"data": base64.urlsafe_b64encode(b"Visible email text only").decode("ascii").rstrip("=")},
+                    },
+                    {
+                        "mimeType": "text/plain",
+                        "filename": "private-attachment.txt",
+                        "body": {"data": base64.urlsafe_b64encode(b"SECRET ATTACHMENT CONTENT").decode("ascii").rstrip("=")},
+                    },
+                ],
+            }
+        }
+        extracted = extract_message(message)
+        self.assertIn("Visible email text only", extracted["content"])
+        self.assertNotIn("SECRET ATTACHMENT CONTENT", extracted["content"])
+
+    def test_dashboard_gmail_data_is_isolated_per_user(self):
+        other = User.objects.create_user(
+            username="gmail_scan_other",
+            email="other-scan@example.com",
+            password="Strong-test-password-123!",
+        )
+        ThreatHistory.objects.create(
+            user=self.user,
+            source_type="gmail",
+            content="From: mine@example.com\\nSubject: My message\\n\\nMy private content",
+            result="PHISHING",
+            phishing_probability=99,
+            tactics=["Urgency Pressure"],
+            safe_score=1,
+            message_id="mine",
+        )
+        ThreatHistory.objects.create(
+            user=other,
+            source_type="gmail",
+            content="From: other@example.com\\nSubject: Other message\\n\\nOther private content",
+            result="SAFE",
+            phishing_probability=1,
+            tactics=[],
+            safe_score=99,
+            message_id="other",
+        )
+        own_data = dashboard_gmail_data(self.user)
+        other_data = dashboard_gmail_data(other)
+        self.assertEqual(own_data["monitor_total_scanned"], 1)
+        self.assertEqual(other_data["monitor_total_scanned"], 1)
+        self.assertEqual(own_data["monitor_email_history"][0]["subject"], "My message")
+        self.assertEqual(other_data["monitor_email_history"][0]["subject"], "Other message")
 
     def test_duplicate_message_is_not_scanned_twice(self):
         ThreatHistory.objects.create(
