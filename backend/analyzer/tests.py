@@ -2,6 +2,7 @@ import json
 import hashlib
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -814,6 +815,41 @@ class EmailAuthenticationUpgradeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "already exists")
         self.assertEqual(User.objects.filter(email__iexact="person@example.com").count(), 1)
+
+    def test_database_rejects_duplicate_email_case_insensitively(self):
+        User.objects.create_user(
+            username="database_email_owner",
+            email="unique.person@example.com",
+            password="Strong-test-password-123!",
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                User.objects.create_user(
+                    username="database_email_duplicate",
+                    email="UNIQUE.PERSON@example.com",
+                    password="Strong-test-password-123!",
+                )
+
+        self.assertEqual(
+            User.objects.filter(email__iexact="unique.person@example.com").count(),
+            1,
+        )
+
+    def test_database_allows_multiple_blank_legacy_emails(self):
+        first = User.objects.create_user(
+            username="legacy_blank_email_one",
+            email="",
+            password="Strong-test-password-123!",
+        )
+        second = User.objects.create_user(
+            username="legacy_blank_email_two",
+            email="",
+            password="Strong-test-password-123!",
+        )
+
+        self.assertNotEqual(first.pk, second.pk)
+        self.assertEqual(User.objects.filter(email="").count(), 2)
 
     def test_login_with_email_address(self):
         user = User.objects.create_user(
