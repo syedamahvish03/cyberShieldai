@@ -57,6 +57,10 @@ SECURE_HSTS_PRELOAD = (
     os.getenv("SECURE_HSTS_PRELOAD", "False").lower() == "true"
 )
 
+# Render terminates HTTPS at its edge proxy and forwards the original scheme.
+# This lets request.build_absolute_uri() create the HTTPS Google OAuth callback URL.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
