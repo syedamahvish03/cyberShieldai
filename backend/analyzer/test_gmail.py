@@ -311,7 +311,7 @@ class GmailScanningTests(TestCase):
         self.assertIn("Urgent account verification", record.content)
         self.assertNotIn("Your account will be suspended", record.content)
         self.assertNotIn("verify your account immediately", record.content)
-        self.assertIn("URL destinations: example.org/path", record.content)
+        self.assertIn("URL destinations: example.org", record.content)
         self.assertNotIn("tracking=123", record.content)
         self.assertNotIn("#section", record.content)
         dashboard_record = dashboard_gmail_data(self.user)["monitor_email_history"][0]
@@ -384,6 +384,25 @@ class GmailScanningTests(TestCase):
         extracted = extract_message(message)
         self.assertIn("Visible email text only", extracted["content"])
         self.assertNotIn("SECRET ATTACHMENT CONTENT", extracted["content"])
+
+    def test_html_link_destination_is_analyzed_but_only_domain_is_retained(self):
+        html = '<html><body><a href="https://example.org/private/path?token=abc#fragment">Click here</a></body></html>'
+        encoded = base64.urlsafe_b64encode(html.encode("utf-8")).decode("ascii").rstrip("=")
+        extracted = extract_message({
+            "payload": {
+                "mimeType": "text/html",
+                "headers": [
+                    {"name": "From", "value": "sender@example.org"},
+                    {"name": "Subject", "value": "Please review"},
+                ],
+                "body": {"data": encoded},
+            }
+        })
+        self.assertIn("https://example.org/private/path?token=abc#fragment", extracted["content"])
+        self.assertIn("URL destinations: example.org", extracted["history_content"])
+        self.assertNotIn("/private/path", extracted["history_content"])
+        self.assertNotIn("token=abc", extracted["history_content"])
+        self.assertNotIn("#fragment", extracted["history_content"])
 
     def test_dashboard_gmail_data_is_isolated_per_user(self):
         other = User.objects.create_user(
