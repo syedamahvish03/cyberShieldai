@@ -1,158 +1,166 @@
-import matplotlib.pyplot as plt
-import seaborn as sns
+"""Train and evaluate the email phishing text classifier.
 
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve, auc
-import pandas as pd
+Run from the repository root:
+    python ml_model/email_train_model.py
+
+Expected private/local dataset:
+    datasets/emails/phishing_email.csv
+with columns: text_combined, label
+
+The TF-IDF vocabulary is fitted on the training split only to prevent
+vocabulary leakage from the held-out test data.
+"""
+from pathlib import Path
+
 import joblib
-
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
+    auc,
+    classification_report,
+    confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
-    classification_report
+    roc_curve,
 )
+from sklearn.model_selection import train_test_split
 
-# Load dataset
-df = pd.read_csv("../datasets/emails/phishing_email.csv")
 
-# Features and labels
-X = df['text_combined']
-y = df['label']
+ROOT = Path(__file__).resolve().parents[1]
+DATASET_PATH = ROOT / "datasets" / "emails" / "phishing_email.csv"
+MODEL_DIR = ROOT / "ml_model"
+OUTPUT_DIR = ROOT / "evaluations" / "email"
+RANDOM_STATE = 42
+TEST_SIZE = 0.20
 
-# Convert text into numerical vectors
-vectorizer = TfidfVectorizer()
 
-X_vectorized = vectorizer.fit_transform(X)
+def main():
+    if not DATASET_PATH.exists():
+        raise FileNotFoundError(
+            f"Dataset not found: {DATASET_PATH}. "
+            "See docs/MODELS_AND_DATASETS.md for expected data and licensing notes."
+        )
 
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(
-    X_vectorized,
-    y,
-    test_size=0.2,
-    random_state=42
-)
+    df = pd.read_csv(DATASET_PATH)
+    required = {"text_combined", "label"}
+    missing = required.difference(df.columns)
+    if missing:
+        raise ValueError(f"Dataset is missing required columns: {sorted(missing)}")
 
-# Train model
-model = LogisticRegression()
+    df = df[["text_combined", "label"]].dropna()
+    df["text_combined"] = df["text_combined"].astype(str).str.strip()
+    df = df[df["text_combined"].ne("")]
+    df["label"] = pd.to_numeric(df["label"], errors="coerce")
+    df = df.dropna(subset=["label"])
+    df["label"] = df["label"].astype(int)
 
-model.fit(X_train, y_train)
+    labels = set(df["label"].unique())
+    if labels != {0, 1}:
+        raise ValueError(
+            "Expected binary labels 0 (safe) and 1 (phishing); "
+            f"found: {sorted(labels)}"
+        )
+    if df["label"].value_counts().min() < 2:
+        raise ValueError("Each class needs at least two rows for a stratified split.")
 
-# Predictions
-y_pred = model.predict(X_test)
+    X_train, X_test, y_train, y_test = train_test_split(
+        df["text_combined"],
+        df["label"],
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE,
+        stratify=df["label"],
+    )
 
-# Accuracy
-accuracy = accuracy_score(y_test, y_pred)
+    # Fit vocabulary on training data only. Never fit on the held-out test set.
+    vectorizer = TfidfVectorizer()
+    X_train_vec = vectorizer.fit_transform(X_train)
+    X_test_vec = vectorizer.transform(X_test)
 
-# Save model and vectorizer
-joblib.dump(model, "email_model.pkl")
-joblib.dump(vectorizer, "email_vectorizer.pkl")
+    model = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
+    model.fit(X_train_vec, y_train)
 
-# =========================
-# METRICS
-# =========================
+    y_pred = model.predict(X_test_vec)
+    class_order = list(model.classes_)
+    phishing_index = class_order.index(1)
+    y_prob = model.predict_proba(X_test_vec)[:, phishing_index]
 
-accuracy = accuracy_score(y_test, y_pred)
+    metrics = {
+        "accuracy": accuracy_score(y_test, y_pred),
+        "precision": precision_score(y_test, y_pred, pos_label=1, zero_division=0),
+        "recall": recall_score(y_test, y_pred, pos_label=1, zero_division=0),
+        "f1": f1_score(y_test, y_pred, pos_label=1, zero_division=0),
+    }
+    report = classification_report(
+        y_test, y_pred, labels=[0, 1],
+        target_names=["Safe", "Phishing"], zero_division=0
+    )
 
-precision = precision_score(y_test, y_pred)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-recall = recall_score(y_test, y_pred)
+    # Keep the separate model/vectorizer files expected by analyzer.services.
+    joblib.dump(model, MODEL_DIR / "email_model.pkl")
+    joblib.dump(vectorizer, MODEL_DIR / "email_vectorizer.pkl")
 
-f1 = f1_score(y_test, y_pred)
+    metrics_text = [
+        "EMAIL MODEL EVALUATION",
+        f"Dataset rows after cleaning: {len(df)}",
+        f"Training rows: {len(X_train)}",
+        f"Test rows: {len(X_test)}",
+        f"Random state: {RANDOM_STATE}",
+        f"Test size: {TEST_SIZE}",
+        "TF-IDF fit: training split only",
+        "",
+        f"Accuracy  : {metrics['accuracy'] * 100:.2f}%",
+        f"Precision : {metrics['precision'] * 100:.2f}%",
+        f"Recall    : {metrics['recall'] * 100:.2f}%",
+        f"F1 Score  : {metrics['f1'] * 100:.2f}%",
+        "",
+        "CLASSIFICATION REPORT",
+        report,
+    ]
+    (OUTPUT_DIR / "email_metrics.txt").write_text(
+        "\n".join(metrics_text), encoding="utf-8"
+    )
 
-report = classification_report(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(
+        cm, annot=True, fmt="d", cmap="Blues",
+        xticklabels=["Safe", "Phishing"],
+        yticklabels=["Safe", "Phishing"],
+    )
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.title("Email Confusion Matrix")
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "email_confusion_matrix.png", dpi=150)
+    plt.close()
 
-print("\n===== EMAIL MODEL =====\n")
+    fpr, tpr, _ = roc_curve(y_test, y_prob, pos_label=1)
+    roc_auc = auc(fpr, tpr)
+    plt.figure(figsize=(6, 5))
+    plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.3f}")
+    plt.plot([0, 1], [0, 1], linestyle="--")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Email ROC Curve")
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "email_roc_curve.png", dpi=150)
+    plt.close()
 
-print(f"Accuracy  : {accuracy * 100:.2f}%")
+    print("\n".join(metrics_text))
+    print(f"\nSaved model artifacts to: {MODEL_DIR}")
+    print(f"Saved evaluation outputs to: {OUTPUT_DIR}")
 
-print(f"Precision : {precision * 100:.2f}%")
 
-print(f"Recall    : {recall * 100:.2f}%")
-
-print(f"F1 Score  : {f1 * 100:.2f}%")
-
-print("\n===== CLASSIFICATION REPORT =====\n")
-
-print(report)
-
-# =========================
-# SAVE METRICS
-# =========================
-
-with open("evaluations/email/email_metrics.txt", "w") as f:
-
-    f.write("===== EMAIL MODEL =====\n\n")
-
-    f.write(f"Accuracy  : {accuracy * 100:.2f}%\n")
-
-    f.write(f"Precision : {precision * 100:.2f}%\n")
-
-    f.write(f"Recall    : {recall * 100:.2f}%\n")
-
-    f.write(f"F1 Score  : {f1 * 100:.2f}%\n\n")
-
-    f.write("===== CLASSIFICATION REPORT =====\n\n")
-
-    f.write(report)
-
-# =========================
-# CONFUSION MATRIX
-# =========================
-
-cm = confusion_matrix(y_test, y_pred)
-
-plt.figure(figsize=(6,5))
-
-sns.heatmap(
-    cm,
-    annot=True,
-    fmt='d',
-    cmap='Blues',
-    xticklabels=['Safe', 'Phishing'],
-    yticklabels=['Safe', 'Phishing']
-)
-
-plt.xlabel("Predicted")
-
-plt.ylabel("Actual")
-
-plt.title("Email Confusion Matrix")
-
-plt.savefig("evaluations/email/email_confusion_matrix.png")
-
-plt.close()
-
-# =========================
-# ROC CURVE
-# =========================
-
-y_prob = model.predict_proba(X_test)[:,1]
-
-fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-
-roc_auc = auc(fpr, tpr)
-
-plt.figure(figsize=(6,5))
-
-plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.2f}")
-
-plt.plot([0,1], [0,1], linestyle='--')
-
-plt.xlabel("False Positive Rate")
-
-plt.ylabel("True Positive Rate")
-
-plt.title("Email ROC Curve")
-
-plt.legend(loc="lower right")
-
-plt.savefig("evaluations/email/email_roc_curve.png")
-
-plt.close()
-
-print("\n✅ Evaluation Files Saved")
+if __name__ == "__main__":
+    main()
